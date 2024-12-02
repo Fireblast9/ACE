@@ -1,5 +1,8 @@
-The purpose of my thesis is to study arbitrary code execution (ACE). ACE is a technique in which a malicious user is able to run some unintended code in an external machine. 
+"How does arbitrary code execution exploit vulnerabilities, and what can it teach us about software security?"
 
-The case study I would like to look into is using the videogame Pokemon Emerald (2004), that was written in the C and ARM assembly languages.
 
-The choice of case study is because this is a topic I am personally extremely interested in and also because the entire source code of the project is available to consult and study.
+The purpose of my thesis is to study arbitrary code execution (ACE), a technique where a malicious user can execute unintended code on an external machine.
+
+As a case study, I intend to analyze the video game Pokémon Emerald (2004), which was written in C and ARM assembly.
+
+This choice is driven by my personal interest in the topic and the fact that the game's full source code is available for consultation and study.
