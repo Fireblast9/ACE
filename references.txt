@@ -1,0 +1,11 @@
+https://www.sciencedirect.com/science/article/abs/pii/B9781597496537000104 - The Basics of Information Security
+
+https://thesecmaster.com/blog/how-to-fix-the-cve-2021-40444 - How To Fix The CVE-2021-40444 A New 0-Day MSHTML Remote Code Execution Vulnerability Targeting Windows Users?
+
+https://www.okta.com/identity-101/arbitrary-code-execution/ - Arbitrary Code Execution (ACE): Definition & Defense
+
+https://catonmat.net/ldd-arbitrary-code-execution - ldd arbitrary code execution
+
+https://www.wallarm.com/what/arbitrary-code-execution-vulnerabilities - Arbitrary Code Execution vulnerabilities
+
+https://comsec.ethz.ch/research/microarch/retbleed/ - Retbleed: Arbitrary Speculative Code Execution with Return Instructions
