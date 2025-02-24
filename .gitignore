@@ -1,0 +1,34 @@
+.vscode/
+.idea/
+pin/
+*_log.txt
+symbols/
+
+# MS Office
+~$*
+
+# Compilation output
+cmake/
+jung_client
+jung_server
+trace_merge
+*.o
+*.pb.*
+
+# LaTeX
+*.log
+*.synctex.gz
+*.aux
+*.toc
+*.out
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.lof
+*.lot
+
+# System
+Thumbs.db
+desktop.ini
+.DS_Store
