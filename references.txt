@@ -9,3 +9,7 @@ https://catonmat.net/ldd-arbitrary-code-execution - ldd arbitrary code execution
 https://www.wallarm.com/what/arbitrary-code-execution-vulnerabilities - Arbitrary Code Execution vulnerabilities
 
 https://comsec.ethz.ch/research/microarch/retbleed/ - Retbleed: Arbitrary Speculative Code Execution with Return Instructions
+
+https://arxiv.org/abs/2301.13760 - State of the art application that prevents Arbitrary code execution
+
+https://dl.acm.org/doi/10.1145/1920261.1920269 - his work proposes a compiler-based transformation that removes or “gadgetizes” all free-branch instructions (like RET and indirect CALLs) in binaries. By eliminating the very gadgets that attackers rely on for return-oriented programming (ROP)—a common technique used to achieve arbitrary code execution—the technique significantly raises the bar for exploiting buffer overflow vulnerabilities and similar memory corruption flaws.
