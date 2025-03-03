@@ -1,0 +1,15 @@
+"State of the art chapter"
+
+- Detection (note on detection)
+- protection
+
+- Analyze languages (which languages do what and on what language you can do what)
+
+- System security
+- Language-based security
+
+Instead of using language x use framework you
+
+Check citations (both ahead and backwards)
+
+Check out authors that write relevant topics
