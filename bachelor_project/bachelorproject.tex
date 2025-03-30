@@ -54,11 +54,12 @@ In Pokémon Emerald, the player can use a glitch called \textit{Pomeg glitch} to
 
 The HP stat is calculated through the following formula:
 
-\[
+\begin{equation}
 	\text{HP} = \left( \frac{(2 \times \text{Base} + \text{IV} + \left( \frac{\text{EV}}{4} \right)) \times \text{Level}}{100} \right) + \text{Level} + 10
-\]
+	\label{eq:ergodic_hypothesis}
+\end{equation}
 
-This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is the only stat that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg Berry} to lower the EV value of a Pokémon by 10. However, if for example the Pokémon's current HP was at 1, when updating current and max HP, the game could set the HP value to 0, or, even worse, something below it, like $ (2^16)-1$ or 65535 HP (due to HP being an unsigned two-bytes integer) and if this was the only pokemon alive, this then becomes a problem because since using this item requires to be in the exploration state, the game has no way to game over.
+This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is the only stat that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg Berry} to lower the EV value of a Pokémon by 10. However, if for example the Pokémon's current HP was at 1, when updating current and max HP, the game could set the HP value to 0, or, even worse, something below it, like $ (2^16)-1$ or 65535 HP (due to HP being an unsigned two-bytes integer) and if this was the only pokemon alive, this then creates an impossible situation upon starting the next battle, because since using this item requires to be in the exploration state, the game has no way to game over. And thus when starting a battle the game has no pokemon to send out.
 
 
 \section{\textbf{Approach}}
