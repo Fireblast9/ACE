@@ -42,7 +42,7 @@ One of the most common types of these vulnerabilities is arbitrary code executio
 
 This then becomes a significantly serious issue as it can lead to unauthorized access to sensitive information, data loss, and even complete system compromise. These types of ACE vulnerabilities can be found in a wide range of software: including operating systems, web applications, and even video games. In fact, some very dangerous ACE vulnerabilities have been found in video games like \textit{Super Mario World}, where they have been used to allow users to literally "program" new games into the system mid-run.
 
-In this thesis, we will explore the concept of ACE in detail, using a case study of the game \textit{Pokémon Emerald (2004)} to illustrate how these vulnerabilities can be exploited and to understand the importance of creating state of the art protections against this type of attacks.
+In this thesis, we will explore the concept of ACE in detail, using a case study of the game \textit{Pokémon Emerald (2004)} to illustrate how these vulnerabilities can be exploited and to understand the importance of creating state of the art protections against this type of attacks. After which we will discuss the state of the art in ACE vulnerabilities and how they can be mitigated. We will also look at some of the most common techniques used to protect against these vulnerabilities, and how they can be prevented.
 
 \section{\textbf{Arbitrary code execution}}
 I'd like to start with a simple explanation of what arbitrary code execution (ACE in short) is: \textit{updog}. And what is updog, you may ask? \textit{Not much, what's up with you?}.
@@ -69,21 +69,17 @@ The HP stat is calculated through the following formula:
 
 This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is the only stat that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg Berry} to lower the EV value of a Pokémon by 10. However, if for example the Pokémon's current HP was at 1, when updating current and max HP, the game could set the HP value to 0, or, even worse, something below it, like underflowing to $ 2^{16}-1$ or 65535 HP (due to HP being an unsigned two-bytes integer) and if this was the only pokemon alive, this then creates an impossible situation upon starting the next battle, because since using this item requires to be in the exploration state, the game has no way to game over. And thus when starting a battle the game has no pokemon to send out.
 
+\subsection{\textbf{Glitzer Popping}}
 
-\section{\textbf{Approach}}
-\subsection{\textbf{The main idea}}
-Some of the various techniques are listed below:
 
-\begin{itemize}
-	\item tech 1
-	\item tech 2
-\end{itemize}
+\subsection{\textbf{What actually goes on behind the scenes}}
 
-\noindent You may write the formulas as follows:
 
-\begin{equation}
-	\phi(n) = (p-1) \cdot (q-1)\\
-\end{equation}
+\section{\textbf{State of the art chapter}}
+\subsection{\textbf{What is the situation today}}
+
+
+\subsection{\textbf{Current studies on security and improvements on protections}}
 
 
 
@@ -99,8 +95,7 @@ To insert a figure use the following command:
 
 
 
-\section{\textbf{Evaluation}}
-\subsection{\textbf{Results}}
+\section{\textbf{Conclusion}}
 The experimental result goes here ... \footnote{https://www.usi.ch}. \\
 
 
