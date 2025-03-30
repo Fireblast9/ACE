@@ -45,9 +45,17 @@ These vulnerabilities can be exploited through various means, including buffer o
 
 
 
-\section{\textbf{Pokémon Emerald, the case study}}
-\subsection{\textbf{What actually happens?}}
-In Pokémon Emerald, the player can use a glitch called \textit{Pomeg glitch} to put the game in an impossible state. To explain this glitch first we need to understand how the gam works. In Pokémon Emerald the player goes around
+\section{\textbf{Pokémon Emerald - What actually happens?}}
+\subsection{\textbf{The Pomeg glitch}}
+In Pokémon Emerald, the player can use a glitch called \textit{Pomeg glitch} to put the game in an impossible state. To explain this glitch first it would be wise to understand how the game roughly works. In Pokémon Emerald the player can be in two states: the exploration state, where they can go around the map with a team of up to six Pokémon which can be caught in the battle state, that is where the fighting happens, anyone caught after the sixth gets sent in the PC which is a storage system that allows the player to store Pokémon that they do not want to carry with them. The Pokémon have their own stats, which improve based on their levels and what other Pokémon they fight. The stat involved with the Pomeg glitch is \textit{HP} (Hit Points), which is the amount of health a Pokémon has. If a Pokémon's HP reaches 0, it faints and cannot be used until it is revived and if all of them reach 0, we get a game over. This of course can only happen when the game is in the battle state.
+
+The HP stat is calculated through the following formula:
+
+\[
+	\text{HP} = \left( \frac{(2 \times \text{Base} + \text{IV} + \left( \frac{\text{EV}}{4} \right)) \times \text{Level}}{100} \right) + \text{Level} + 10
+\]
+
+This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is a stat that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg Berry} to lower the EV value of a Pokémon by 10. However, if for example the Pokémon's current HP was at 1, when updating current and max HP, the game could set the HP value to 0, and if this was the only pokemon alive, this then becomes a problem because since using this item requires to be in the exploration state, the game has no way to game over.
 
 
 \section{\textbf{Approach}}
