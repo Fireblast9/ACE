@@ -7,17 +7,18 @@
 
 %%% Main Body %%%
 
-\author{Student's full name }
+\author{Sasha Toscano}
 
-\title{\textbf{Project Title}}
-\subtitle{Subtitle}
+\title{\textbf{Understanding arbitrary code
+execution}}
+\subtitle{A case study on Pokémon Emerald}
 \versiondate{\today}
 
 \begin{committee}
 %With more than 1 advisor an error is raised...: only 1 advisor is allowed!
-\advisor[Universit\`a della Svizzera Italiana, Switzerland]{ }{Firstname }{Lastname }
+\advisor[Universit\`a della Svizzera Italiana, Switzerland]{ }{Carlo Alberto}{Furia}
 %You can comment out  these lines if you don't have any assistant
-\coadvisor[Universit\`a della Svizzera Italiana, Switzerland]{ }{Firstname}{Lastname}
+\coadvisor[Universit\`a della Svizzera Italiana, Switzerland]{ }{Marc}{Langheinrich}
 
 \end{committee}
 
@@ -32,9 +33,14 @@ You may include up to six keywords or phrases. Keywords should be separated with
 \tableofcontents\newpage
 %\listoffigures\newpage
 
-\section{\textbf{Introduction}}
-Start writing your intro here. You can then use the following commands in your LaTeX document:
-\cite{label} To insert a citation where label is the label of a bibliographic entry in a .bib file. For instance:\cite{Hamari}\\
+\section{\textbf{What is arbitrary code exceution?}}
+I'd like to start with a simple explanation of what arbitrary code execution (ACE in short) is: \textit{updog}. And what is updog, you may ask? \textit{Not much, what's up with you?}.
+
+This is an extremely simple but direct way of explaining what ACE is (credits to \href{https://www.youtube.com/watch?v=-XmXYCXX7y4}{Smoovers} for the joke). In this case the joke is self-explanatory, but the idea behind it is that we end up saying something (\textit{what's up dawg?}) that is not what we intended to say (\textit{what does updog mean?}). This is extremely similar to what happens during ACE in the real world (don't like this, gotta rephrase), where we end up executing code that we did not intend to execute, albeit with dramatically more complicated consequences.
+
+To get a bit more into the proper definition of things: ACE is a type of flaw or vulnerability that allows an attacker to execute some (generally speaking) malicious code on a target system. This can happen because a machine, by itself, is not capable of differentiating between some generic text and actual commands. Therefore, without proper protections and preventions put in place, an attacker can easily exploit these to gain access to sensitive information, take control of the system, or even cause damage to the system itself. The severity of this incidents can vary greatly: in the past these exploits have gone from allowing gamers to better their speedrunning performances (where speedrunning is the act of playing a video game with the goal of completing it as fast as possible), to leaking sensitive kernel memory on real world systems, as was the case in \href{https://comsec.ethz.ch/research/microarch/retbleed/}{Retbleed}.
+
+These vulnerabilities can be exploited through various means, including buffer overflows, code injection, and other techniques; however in the context of this case study, we will be looking at a specific example of ACE in the world of video games, specifically in the game \textit{Pokémon Emerald (2004)} where the techniques used to exploit the vulnerabilities are \textbf{Arbitrary memory write} and \textbf{out-of-bounds writes}, which is where existing mechanics are used to place crafted instructions into writable areas.
 
 
 
