@@ -1,0 +1,6 @@
+Introduction chapter : TODO, also read the given examples. General overview extremely high-broad. Like give an example of what happens (retbleed) for example, then go into ACE slightly in the end. 
+
+ACE chapter : sub divide, 1. what is it, add a schema. 2. real example 3. ev. Possible consequences
+
+
+Schemi e grafici to explain what happens
