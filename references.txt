@@ -19,3 +19,11 @@ https://dl.acm.org/doi/10.1145/1920261.1920269 - his work proposes a compiler-ba
 https://glitchcity.wiki/wiki/Pomeg_glitch - The Pomeg glitch
 
 https://glitchcity.wiki/wiki/Pomeg_data_corruption_glitch - Glitzer popping
+
+https://projectpokemon.org/home/docs/other/notable-breakpoints-r31/ - Notable memory addresses
+
+https://bulbapedia.bulbagarden.net/wiki/Pomeg_glitch - Pomeg glitch
+
+https://glitchcity.wiki/wiki/Arbitrary_code_execution - ACE in pokemon 
+
+https://problemkaputt.de/gbatek.htm#gbamemorymap - GBA memory map
