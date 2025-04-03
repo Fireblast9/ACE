@@ -47,7 +47,13 @@ In this thesis, we will explore the concept of ACE in detail, using a case study
 \section{\textbf{Arbitrary code execution}}
 I'd like to start with a simple explanation of what arbitrary code execution (ACE in short) is: \textit{updog}. And what is updog, you may ask? \textit{Not much, what's up with you?}.
 
-This is an extremely simple but direct way of explaining what ACE is (credits to \href{https://www.youtube.com/watch?v=-XmXYCXX7y4}{Smoovers} for the joke). In this case the joke is self-explanatory, but the idea behind it is that we end up saying something (\textit{what's up dawg?}) that is not what we intended to say (\textit{what does updog mean?}). This is extremely similar to what happens during ACE in the real world (don't like this, gotta rephrase), where we end up executing code that we did not intend to execute, albeit with dramatically more complicated consequences.
+\begin{figure}[h!]
+	\center{\includegraphics[scale=0.3]
+		{figures/ace.png}}
+	\caption{A graphical illustration of the \textit{updog} joke, credits to \href{https://www.youtube.com/watch?v=-XmXYCXX7y4}{Smoovers}}\label{fig:updog}
+\end{figure}
+
+This joke, illustrated in Figure \ref{fig:updog} is an extremely simple but direct way of explaining what ACE is. In this case the joke is self-explanatory, but the idea behind it is that we end up saying something (\textit{what's up dawg?}) that is not what we intended to say (\textit{what does updog mean?}). This is extremely similar to what happens during ACE in the real world (don't like this, gotta rephrase), where we end up executing code that we did not intend to execute, albeit with dramatically more complicated consequences.
 
 To get a bit more into the proper definition of things: ACE is a type of flaw or vulnerability that allows an attacker to execute some (generally speaking) malicious code on a target system. Without proper protections and preventions put in place, an attacker can easily exploit these to gain access to sensitive information, take control of the system, or even cause damage to the system itself. The severity of this incidents can vary greatly: in the past these exploits have gone from allowing gamers to better their speedrunning performances (where speedrunning is the act of playing a video game with the goal of completing it as fast as possible), to leaking sensitive kernel memory on real world systems, as was the case in \href{https://comsec.ethz.ch/research/microarch/retbleed/}{Retbleed}.
 
@@ -67,12 +73,28 @@ The HP statistic is calculated through the following formula:
 	\label{eq:ergodic_hypothesis}
 \end{equation}
 
-This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is the only statistic that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg berry} to lower the EV value of a Pokémon by 10. However, if, for example, the Pokémon's current HP was at 1, when updating the newly calculated HP statistic, both the current HP and max HP get lowered and as such, the game could set the current HP value to 0, or, even worse, something below it, like underflowing to $ 2^{16}-1$ or 65535 HP (due to the HP statistic being an unsigned two-bytes integer). Now, to use a \textit{Pomeg berry} the player needs to not be in the combat state, and this can create some issues because the game is only capable of handling game overs (which happens when all of the player's Pokémon reach 0 HP) if the player is in a combat state. The problem arises in the situation where the Pokémon whose HP is being updated is the only one with $HP > 1$, because the player may ends up with a full party of dead Pokémon. This is not a problem at the second it happens, however if the player is to start a battle, the game will try to look for a Pokémon to fight with, and it will find none, because all of them are dead. So after unsuccessfully looking for a Pokémon to fight with, the game will then send out a \textbf{??????????} (commonly known in the Pokémon community as \textbf{Decamark}), which is be used to prevent game crashes.
+This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is the only statistic that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg berry} to lower the EV value of a Pokémon by 10. However, if, for example, the Pokémon's current HP was at 1, when updating the newly calculated HP statistic, both the current HP and max HP get lowered and as such, the game could set the current HP value to 0, or, even worse, something below it, like underflowing to $ 2^{16}-1$ or 65535 HP (due to the HP statistic being an unsigned two-bytes integer). Now, to use a \textit{Pomeg berry} the player needs to not be in the combat state, and this can create some issues because the game is only capable of handling game overs (which happens when all of the player's Pokémon reach 0 HP) if the player is in a combat state. The problem arises in the situation where the Pokémon whose HP is being updated is the only one with $HP > 1$, because the player may ends up with a party of only dead Pokémon, as can be seen in figure \ref{fig:dead_team}.
+
+\begin{figure}[h!]
+	\center{\includegraphics
+		{figures/dead_team.png}}
+	\caption{A technically impossible state}\label{fig:dead_team}
+\end{figure}
+
+This is not a problem at the second it happens, however if the player is to start a battle, the game will try to look for a Pokémon to fight with, and it will find none, because all of them are dead. So after unsuccessfully looking for a Pokémon to fight with, the game will then send out a \textbf{?} (commonly known in the Pokémon community as \textbf{Decamark}) as can be seen in Figure \ref{fig:decamark}, which is be used to prevent game crashes.
+
+\begin{figure}[h!]
+	\center{\includegraphics
+		{figures/decamark.png}}
+	\caption{The decamark Pokémon}\label{fig:decamark}
+\end{figure}
 
 At this point, the player can try to: fight, run away or use an item, all options which would result in a white out (the game over mechanic). The other option is the more interesting one, where a glitch referred to \textit{\textbf{Glitzer Popping}} can happen.
 
 \subsection{\textbf{Glitzer Popping}}
-\textit{Glitzer popping} is a technique that allows the player to execute arbitrary code in the game
+To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the Boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where the player can start executing some code. The player can rename the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box. This is where the \textit{Glitzer popping} comes into play: it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box. "But how do we get the game to read the name of the box?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
+
+
 
 
 \subsection{\textbf{What actually goes on behind the scenes}}
