@@ -89,15 +89,75 @@ This is not a problem at the second it happens, however if the player is to star
 	\caption{The decamark Pokémon}\label{fig:decamark}
 \end{figure}
 
-At this point, the player can try to: fight, run away or use an item, all options which would result in a white out (the game over mechanic). The other option is the more interesting one, where a glitch referred to \textit{\textbf{Glitzer Popping}} can happen.
+At this point, the player can try to: fight, run away or use an item, all options which would result in a white out (the game over mechanic). But how can this lead to ACE? This is where the glitch known as \textit{Glitzer popping} comes into play.
 
 \subsection{\textbf{Glitzer Popping}}
-To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the Boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where the player can start executing some code. The player can rename the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box. This is where the \textit{Glitzer popping} comes into play: it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box. "But how do we get the game to read the name of the box?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
+The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Glitzer popping}, is a glitch that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box. The player can rename the boxes to a specific string, obtaining different results spanning from obtaining event-exclusive items or Pokémon (for Pokémon Emerald many events were in-person at some specific locations), to modify player information or game flags, all the way to being able to execute custom scripts (like creating your own events). "But how do we get the game to read the name of the box to the point where it gets executed?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
+
+
+\subsubsection{\textbf{The setup}}
+First things first, this thesis is not a tutorial on how to achieve this glitches, as there are countless fantastic other guides about replicating them (like \href{https://www.youtube.com/watch?v=45kwOEhKbUg}{this one}, or \href{https://e-sh4rk.github.io/ACE3/}{this one}), rather, my purpose is to illustrate and figure out why and how does ACE happen, using Pokémon Emerald as a basis for it.
+
+To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the Boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where the player can start executing some code. The player can rename the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box. This is where the \textit{Glitzer popping} comes into play: it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box (an example can be seen in Table \ref{tab:boxes_names}).
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|l|}
+		\hline
+		\textbf{Box} & \textbf{Name} \\
+		\hline
+		Box 1        & (VTTnFMBn)    \\
+		Box 2        & (EEENJRo )    \\
+		Box 3        & (EE5…Bq  )    \\
+		Box 4        & (EFF…o   )    \\
+		Box 5        & (KT?nTR?n)    \\
+		Box 6        & (EEEIP?n )    \\
+		Box 7        & (EE'FQm  )    \\
+		Box 8        & (EmFlo   )    \\
+		Box 9        & (yLRom"Ro)    \\
+		Box 10       & (EEEFGEn )    \\
+		Box 11       & (EE …?q  )    \\
+		Box 12       & (E…P-n   )    \\
+		Box 13       & (FQRn…TRn)    \\
+		Box 14       & (EEEt ?n )    \\
+		\hline
+	\end{tabular}
+	\caption{Example box names required to teleport to map ID \texttt{0B10}}
+	\label{tab:boxes_names}
+\end{table}
+
+
+The game is not capable of handling the situation where the player has a Decamark in their team, and as such when the player tries to open their team information in battle it will unsuccessfully try to read the Pokémon's data from the memory, leaving instead a blank Pokémon.
+
+% insert image here
+
+So when the player moves the cursor to the first slot in their team, the cursor actually underflows and goes to slot 256  (since a team is made up of a maximum of 6 members) and as such, instead of scrolling through slots 1-6, we player has access to slots 255 and above (as the cursor is technically out of bounds). However, slots outside the first 6 aren't meant to be Pokémon slots, so the game accesses random blocks of RAM data and treats them as Pokémon, even though they are not. In this case the 255th party slot is actually the PC Pokémon data and continuing to scroll upwards allows the player to actually go over memory addresses reserved for various in-game data.
+
+Each time the party Pokémon selection pointer moves to a new party slot, an anti-cheat verification routine is triggered for the selected "Pokémon" (because the game thinks it is, but it's actually not). If the checksum of the selected data block (interpreted as a Pokémon) is invalid, the game modifies it into a Bad Egg, which is the result of the anti-cheating protocol, a bad egg is what the game sees as a "cheated" or invalid Pokémon. This transformation involves setting the Egg Status flag to 1 and enabling two additional bits, which designate the Egg as a "Bad" Egg. Since the memory blocks being interpreted as party Pokémon are not genuine Pokémon structures, their checksums will almost always be invalid—unless the slot is empty.
+
+The Egg Status flag can reside in one of four different locations within a Pokémon's data structure. It is part of one of the four substructures that make up a Pokémon which can be seen in \ref{fig:pokemon-data-structure}, and the order of these substructures is determined by the Pokémon's Personality Value (PID modulo 24). Because these substructures are encrypted using the Pokémon’s PID and the Trainer ID (TID), setting the Egg Status flag to 1 can result in either a bit value of 1 or 0, depending on the result of \texttt{PID} XOR \texttt{TID}. In contrast, the two bits that define a "Bad" Egg are always located at fixed positions, and they are consistently set to 1 when a checksum is invalid. These bit modifications are what cause memory corruption in RAM. However, since only three bits are affected within a block of 100 bytes, the resulting corruption is minimal. Additionally, one of the modified bits is not at a fixed location and may be toggled to either 1 or 0, introducing variability in both the location and nature of the corruption.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% TODO: Replace with actual table %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[h!]
+	\center{\includegraphics[width=\textwidth]
+		{figures/sub-structure.png}}
+	\caption{Pokémon Data Structure (by Substructure) credits to \href{https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_substructures_(Generation_III)}{Bulbapedia}}
+	\label{fig:pokemon-data-structure}
+\end{figure}
+
+
+
+An additional layer of randomness is introduced by the DMA (Direct Memory Access) system, which is another built-in anti-cheat mechanism that shifts the RAM addresses of numerous data structures whenever the player performs actions such as entering a battle, going through a doorway, or opening the Bag. The DMA remaps memory addresses using a translation table of multiple double-words. Any value subjected to DMA can occupy up to 32 different memory addresses, each spaced by 4 bytes (a double-word).
+
+Importantly, party Pokémon are not affected by DMA, which means the memory addresses of the six standard party slots remain fixed. However, any data read from memory locations beyond the sixth slot \textit{is} subject to DMA. Since each party Pokémon occupies 25 double-words, and DMA remapping allows up to 32 double-word shifts, each double-word in a slot beyond the sixth could potentially be placed at an address susceptible to corruption via the Egg Status bit alterations. Due to the variability in both RAM content and corruption locations, these elements may interact unpredictably, sometimes preventing a given double-word from being corrupted by the Egg-related flags.
 
 
 
 
-\subsection{\textbf{What actually goes on behind the scenes}}
+
+\subsubsection{\textbf{What actually goes on behind the scenes}}
 
 
 \section{\textbf{State of the art chapter}}
