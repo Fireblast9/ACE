@@ -131,9 +131,11 @@ The game is not capable of handling the situation where the player has a Decamar
 
 % insert image here
 
-So when the player moves the cursor to the first slot in their team, the cursor actually underflows and goes to slot 256  (since a team is made up of a maximum of 6 members) and as such, instead of scrolling through slots 1-6, we player has access to slots 255 and above (as the cursor is technically out of bounds). However, slots outside the first 6 aren't meant to be Pokémon slots, so the game accesses random blocks of RAM data and treats them as Pokémon, even though they are not. In this case the 255th party slot is actually the PC Pokémon data and continuing to scroll upwards allows the player to actually go over memory addresses reserved for various in-game data.
+So when the player moves the cursor to the first slot in their team, the cursor actually underflows and goes to slot 256  (since a team is made up of a maximum of 6 Pokémon) and as such, instead of scrolling through slots 1-6, we player has access to slots 255 and above (as the cursor is technically out of bounds). However, slots outside the first 6 aren't meant to be Pokémon slots, so the game accesses random blocks of RAM data and treats them as Pokémon, even though they are not. In this case the 255th party slot is actually the PC Pokémon data and continuing to scroll upwards allows the player to actually go over memory addresses reserved for various in-game data.
 
 Each time the party Pokémon selection pointer moves to a new party slot, an anti-cheat verification routine is triggered for the selected "Pokémon" (because the game thinks it is, but it's actually not). If the checksum of the selected data block (interpreted as a Pokémon) is invalid, the game modifies it into a Bad Egg, which is the result of the anti-cheating protocol, a bad egg is what the game sees as a "cheated" or invalid Pokémon. This transformation involves setting the Egg Status flag to 1 and enabling two additional bits, which designate the Egg as a "Bad" Egg. Since the memory blocks being interpreted as party Pokémon are not genuine Pokémon structures, their checksums will almost always be invalid—unless the slot is empty.
+
+\subsubsection{\textbf{Pokémon data structure}}
 
 The Egg Status flag can reside in one of four different locations within a Pokémon's data structure. It is part of one of the four substructures that make up a Pokémon which can be seen in \ref{fig:pokemon-data-structure}, and the order of these substructures is determined by the Pokémon's Personality Value (PID modulo 24). Because these substructures are encrypted using the Pokémon’s PID and the Trainer ID (TID), setting the Egg Status flag to 1 can result in either a bit value of 1 or 0, depending on the result of \texttt{PID} XOR \texttt{TID}. In contrast, the two bits that define a "Bad" Egg are always located at fixed positions, and they are consistently set to 1 when a checksum is invalid. These bit modifications are what cause memory corruption in RAM. However, since only three bits are affected within a block of 100 bytes, the resulting corruption is minimal. Additionally, one of the modified bits is not at a fixed location and may be toggled to either 1 or 0, introducing variability in both the location and nature of the corruption.
 
@@ -147,14 +149,84 @@ The Egg Status flag can reside in one of four different locations within a Poké
 	\label{fig:pokemon-data-structure}
 \end{figure}
 
+The substructure order, as previously said, is defined by a Pokémon's personality value - which is a random unsigned 32-bit integer that is generated at the exact moment a Pokémon gets 'created' in the game - modulo 24, the result is then mapped to the structure seen in table \ref{tab:substructure-order} where G stands for growth, A is attacks, E is EV \& condition and M is miscellaneous.
 
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{cccc}
+		\toprule
+		00. GAEM & 06. AGEM & 12. EGAM & 18. MGAE \\
+		01. GAME & 07. AGME & 13. EGMA & 19. MGEA \\
+		02. GEAM & 08. AEGM & 14. EAGM & 20. MAGE \\
+		03. GEMA & 09. AEMG & 15. EAMG & 21. MAEG \\
+		04. GMAE & 10. AMGE & 16. EMGA & 22. MEGA \\
+		05. GMEA & 11. AMEG & 17. EMAG & 23. MEAG \\
+		\bottomrule
+	\end{tabular}
+	\caption{Substructure order based on PID\%24}
+	\label{tab:substructure-order}
+\end{table}
 
 An additional layer of randomness is introduced by the DMA (Direct Memory Access) system, which is another built-in anti-cheat mechanism that shifts the RAM addresses of numerous data structures whenever the player performs actions such as entering a battle, going through a doorway, or opening the Bag. The DMA remaps memory addresses using a translation table of multiple double-words. Any value subjected to DMA can occupy up to 32 different memory addresses, each spaced by 4 bytes (a double-word).
 
 Importantly, party Pokémon are not affected by DMA, which means the memory addresses of the six standard party slots remain fixed. However, any data read from memory locations beyond the sixth slot \textit{is} subject to DMA. Since each party Pokémon occupies 25 double-words, and DMA remapping allows up to 32 double-word shifts, each double-word in a slot beyond the sixth could potentially be placed at an address susceptible to corruption via the Egg Status bit alterations. Due to the variability in both RAM content and corruption locations, these elements may interact unpredictably, sometimes preventing a given double-word from being corrupted by the Egg-related flags.
 
+Through the use of carefully planned strategies (like the \textit{Glitzer Popping}), it becomes possible to intentionally corrupt specific values within the data of a Pokémon, while simultaneously ensuring that surrounding data remains unaffected, thus enabling a form of highly targeted or pinpoint corruption. This capability allows for the precise manipulation of a Pokémon's PID (Personality ID) and/or TID (Trainer ID) within the PC storage system, without altering the remainder of the Pokémon’s structured data. Since both the PID and TID serve a crucial role in encrypting Pokémon’s four internal substructures, with each one containing different categories of the Pokémon’s information, the corruption of these values causes a dramatic shift in the Pokémon’s checksum, which functions as a form of data integrity verification.
 
+Among the known corruption methods, the two specific bits responsible for creating so-called "Bad Eggs" are not suitable for intentional and controlled Pokémon data corruption, as they invariably fail to preserve the checksum, rendering the resulting data unstable and largely unusable. In contrast, a more nuanced method (corruption via the Egg State Flag) offers a much more promising avenue, as it allows for manipulation while keeping the checksum intact. This method alters the checksum by a multiple of 0x4000, and because the checksum is stored as a 16-bit word, any change that corresponds to an even multiple leaves the checksum effectively unchanged. Although there exist certain rare conditions under which this multiple might be odd, thus compromising the checksum, these conditions can be easily identified and prevented, allowing for a consistently reliable corruption method that keeps the data within safe bounds.
 
+Since the PID governs the order in which the four data substructures are stored and subsequently read by the game, corrupting it directly alters this order, resulting in the game interpreting one category of data as another: for example, reading what is meant to be the Moves substructure as if it were the EVs substructure. This misinterpretation of substructure order becomes a powerful tool for altering multiple facets of a Pokémon's attributes—such as its species, held item, experience points, individual values (IVs), effort values (EVs), friendship level, obedience flag, origin data, and of course, its moveset—simply by assigning specific values to those fields prior to the corruption process. Although there are theoretically 24 different ways to reorder the four substructures, only 10 permutations are actually possible within the game’s mechanics. These ten permutations are collectively referred to as Corruption Types, and each one produces unique effects based on how the substructure data is reorganized, meaning that the specific impact of a PID corruption is entirely determined by which Corruption Type is applied.
+
+However, even when using the Egg State Flag corruption technique, which successfully preserves the Pokémon’s checksum and alters the substructure order as intended, the change to the encryption key (caused by modifying either the PID or TID) can still introduce undesirable side effects. These side effects include transforming the Pokémon into an Egg, assigning glitched or unusable moves to the second and fourth move slots, or disrupting other internal values that affect gameplay. The presence of a corrupted Pokémon in an Egg state poses a significant drawback, as the act of hatching resets many of its attributes and, in the case of certain Glitch Pokémon, can result in game crashes or freezing. Furthermore, corrupted move slots can restrict the player from using, viewing, reordering, or replacing the affected moves, thus limiting the Pokémon's functionality and strategic use.
+
+To mitigate these problems and produce a clean, stable result, an advanced technique involves performing two successive \textit{Glitzer Popping} procedures, first corrupting the PID, and then the TID (or vice versa) in a way that ensures the Pokémon ends up with a valid checksum, a desired change in substructure order, and, importantly, a restoration of its original encryption key through the reversal of the PID or TID alteration. This dual-step approach ensures that the corrupted Pokémon retains its intended modifications while eliminating residual glitched values, effectively enabling the precise and consistent corruption of nearly any Pokémon without the drawbacks typically associated with such manipulations.
+
+\subsubsection{\textbf{The exploit}}
+
+By changing the names of the boxes, for example as seen in table \ref{tab:boxes_names}, when the cursor moves on the invalid Pokémon,
+
+\begin{table}
+	\begin{tabular}{|l|l|l|p{6cm}|}
+		\hline
+		\textbf{Instruction}                & \textbf{Opcode (Hex)} & \textbf{Character Used} & \textbf{Description}               \\
+		\hline
+		\texttt{sbc r12, lr, \#0xD00}       & E2CECED0              & --                      & R12 = LR - 0xD00 - 1               \\
+		\texttt{adcs r12, r12, \#0x3000000} & E2BCC7C0              & --                      & R12 += 0x3000000 (offset setup)    \\
+		\texttt{-filler-}                   & BFBFBFFF              & --                      & Padding                            \\
+		\texttt{bic r12, r12, \#0xC8000000} & E3CCC4C8              & --                      & Clear upper bits for alignment     \\
+		\texttt{-filler-}                   & BFBFFF00              & --                      & Padding                            \\
+		\texttt{ldrt r11, [r12, \#0xA6]!}   & E5BCB0A6              & --                      & Load map ID address into R11       \\
+		\texttt{-filler-}                   & BFFF0000              & --                      & Padding                            \\
+		\texttt{mov r12, \#'F'}             & E3B0C04F              & 'F'                     & From Box 4 → Load base character   \\
+		\texttt{-filler-}                   & FF000000              & --                      & Padding                            \\
+		\texttt{adc r12, r12, \#'K'}        & E2ACCE4B              & 'K'                     & From Box 5 → Add next character    \\
+		\texttt{adc r12, r12, \#'T'}        & E2ACCC54              & 'T'                     & From Box 5 → Add next character    \\
+		\texttt{-filler-}                   & BFBFBFFF              & --                      & Padding                            \\
+		\texttt{adc r12, r12, \#'I'}        & E2ACC049              & 'I'                     & From Box 6 → Final character added \\
+		\texttt{-filler-}                   & BFBFFF00              & --                      & Padding                            \\
+		\texttt{strh r12, [r11, \#4]}       & E1CBC0B4              & FKTI                    & Store constructed map ID           \\
+		\texttt{-filler-}                   & BFFF0000              & --                      & Padding                            \\
+		\texttt{mvn r12, \#0xE1}            & E3E0C0E1              & --                      & Prepare to build opcode            \\
+		\texttt{-filler-}                   & FF000000              & --                      & Padding                            \\
+		\texttt{bic r12, r12, \#0xED00000}  & E3CCC6ED              & --                      & Clear bits                         \\
+		\texttt{bic r11, r12, \#0x1000000E} & E3CCB2E1              & --                      & Prepares opcode for `bx r0`        \\
+		\texttt{-filler-}                   & BFBFBFFF              & --                      & Padding                            \\
+		\texttt{adcs r12, pc, \#0x30}       & E2BFC1C0              & --                      & Compute destination address        \\
+		\texttt{-filler-}                   & BFBFFF00              & --                      & Padding                            \\
+		\texttt{strt r11, [r12]!}           & E5ACB000              & --                      & Store `bx r0` instruction          \\
+		\texttt{-filler-}                   & BFFF0000              & --                      & Padding                            \\
+		\texttt{adc r12, lr, \#0xB0000}     & E2AECAB0              & --                      & Adjust base pointer                \\
+		\texttt{-filler-}                   & FF000000              & --                      & Padding                            \\
+		\texttt{sbc r12, r12, \#0x30000}    & E2CCCBC0              & --                      & Subtract offset                    \\
+		\texttt{sbc r12, r12, \#0xB00}      & E2CCCEB0              & --                      & More alignment                     \\
+		\texttt{-filler-}                   & BFBFBFFF              & --                      & Padding                            \\
+		\texttt{adc r0, r12, \#0xE8}        & E2AC00E8              & --                      & Final call to `CB2\_LoadMap2ENG`   \\
+		\hline
+	\end{tabular}
+
+	\label{tab:boxes_names_explanation}
+	\caption{Explanation of the commands seen in Table \ref{tab:boxes_names}}
+\end{table}
 
 
 \subsubsection{\textbf{What actually goes on behind the scenes}}
