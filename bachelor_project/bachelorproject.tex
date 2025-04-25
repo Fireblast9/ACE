@@ -38,13 +38,14 @@ In the world of software, security is one of the most critical concepts as it is
 
 The software we use is often complex and interconnected, making it difficult to ensure what is secure and what isn't. In many cases, these programs are often developed quickly and with limited resources, and as a result, security is often an afterthought in the development process, leading to oversights or the introduction of vulnerabilities that can be exploited by attackers.
 
-One of the most common types of these vulnerabilities is arbitrary code execution (ACE), which allows a malicious user the ability to execute some arbitrary code on a target system or on a specific application. This can happen because software or computer systems in general are not capable of differentiating between some generic text and actual commands, without some proper protections put in place.
+One of the most common types of these vulnerabilities is arbitrary code execution (ACE), which allows a malicious user to execute some arbitrary code on a target system or on a specific application. This can happen because software or computer systems in general are not capable of differentiating between some generic text and actual commands, without some proper protections put in place.
 
 This then becomes a significantly serious issue as it can lead to unauthorized access to sensitive information, data loss, and even complete system compromise. These types of ACE vulnerabilities can be found in a wide range of software: including operating systems, web applications, and even video games. In fact, some very dangerous ACE vulnerabilities have been found in video games like \textit{Super Mario World}, where they have been used to allow users to literally "program" new games into the system mid-run.
 
-In this thesis, we will explore the concept of ACE in detail, using a case study of the game \textit{Pokémon Emerald (2004)} to illustrate how these vulnerabilities can be exploited and to understand the importance of creating state of the art protections against this type of attacks. After which we will discuss the state of the art in ACE vulnerabilities and how they can be mitigated. We will also look at some of the most common techniques used to protect against these vulnerabilities, and how they can be prevented.
+In this thesis, we will explore the concept of ACE using a case study of the game \textit{Pokémon Emerald} (2004) to demonstrate how such vulnerabilities can be exploited. We will then examine the current state of ACE-related attacks and discuss modern techniques that will be used to mitigate them. We will also look at some of the most common techniques used to protect against these vulnerabilities, and how they can be prevented.
 
 \section{\textbf{Arbitrary code execution}}
+\label{sec:ace}
 I'd like to start with a simple explanation of what arbitrary code execution (ACE in short) is: \textit{updog}. And what is updog, you may ask? \textit{Not much, what's up with you?}.
 
 \begin{figure}[h!]
@@ -63,7 +64,11 @@ These vulnerabilities can be exploited through various means, including buffer o
 
 
 \section{\textbf{Pokémon Emerald - case study}}
+\label{sec:case_study}
+In this section, we will provide a detailed technical analysis of how ACE can be achieved in \textit{Pokémon Emerald} through a series of in-game glitches. At a higher level, this process begins through the use of the \textit{Pomeg glitch} (Chapter~\ref{sec:pomeg_glitch}), which is a glitch that lets players reduce their last Pokémon’s Hit Points (HP) to zero or below outside of battle, creating an impossible game state. This specific setup, when trying to enter a new battle without any usable Pokémon, causes the game to "create" one out of thin air to prevent a crash. This newly created Pokémon, when viewed from the party view in a battle, can be used to abuse the \textit{Glitzer Popping} glitch (Chapter \ref{sec:glitzer_popping}), which allows the player to execute arbitrary code by renaming the Pokémon boxes to a specific string. This can happen because the Pokémon created to prevent crashes causes the cursor to underflow, leading the game to access unintended data. This becomes a problem since the game thinks that it's reading Pokémon data, however due to the underflow it's actually looking at totally different information. As such, since the game is still in a battle, it parses every invalid data through its anti-cheating functions, incorrectly setting "Cheated Pokémon" by flags to what the game thinks are Pokémon. This process involves turning invalid Pokémon in what the game calls "Bad eggs", and since some of the memory addresses that the player ends up underflowing to belong to Pokémon stored in the Box, with a careful setup and an accurate manipulation, it's possible to switch some important bytes of a Pokémon's own data structure (Chapter~\ref{sec:data_structure}) leading to the creation of a stable "glitch Pokémon" (commonly referred to as glitchmon). In this case the corruption of the "Bad egg" will be minimal and as such the egg will end up being able to be hatched normally. This glitchmon, upon being hatched, will try to play its sprite animation (as every Pokémon does when being hatched \textit{Pokémon Emerald}); certain glitchmons have these animations actually stored in the RAM, close the the Boxes data. When trying to play this sprite animation, this will cause the game's pointer to be moved to a "random" memory address, because by being an invalid Pokémon it doesn't actually have a where the arbitrary code is stored and then read and executed (Chapter \ref{sec:running_the_code}).
+
 \subsection{\textbf{The Pomeg glitch}}
+\label{sec:pomeg_glitch}
 In Pokémon Emerald, the player can use a glitch called \textit{Pomeg glitch} to put the game in an impossible state. To explain this glitch first it would be wise to understand how the game roughly works. In Pokémon Emerald the player can be in two states: the exploration state, where they can go around the map with a team of up to six Pokémon which can be caught in, and the battle state, that is where the fighting happen. Any pokemon caught after the sixth gets sent in the PC which is a storage system that allows the player to store Pokémon that they do not want to carry with them. The Pokémon have their own stats, which improve based on their levels and what other Pokémon they fight. The statistic involved with the Pomeg glitch is \textit{HP} (Hit Points), which is the amount of health a Pokémon has. If a Pokémon's HP reaches 0, it faints and cannot be used until it is revived and if all of them reach 0, we get a game over and this can only happen when the game is in the battle state.
 
 The HP statistic is calculated through the following formula:
@@ -92,10 +97,12 @@ This is not a problem right as it happens, however if the player is to start a b
 At this point, the player can try to: fight, run away or use an item, all options which would result in a white out (the game over mechanic). But how can this lead to ACE? This is where the glitch known as \textit{Glitzer popping} comes into play.
 
 \subsection{\textbf{Glitzer Popping}}
+\label{sec:glitzer_popping}
 The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Glitzer popping}, is a glitch that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some ARM-Assembly code that will be executed when the game tries to read the name of the box. The player can rename the boxes in many different ways, obtaining different results spanning from obtaining event-exclusive items or Pokémon (for Pokémon Emerald many events were held in-person at some specific locations), to modify player information or game flags, all the way to being able to execute custom scripts (like creating your own events). "But how do we get the game to read the name of the box to the point where it gets executed?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
 
 
 \subsubsection{\textbf{The setup}}
+\label{sec:setup}
 First things first, this thesis is not a tutorial on how to achieve this glitches, as there are countless fantastic other guides about replicating them (like this video made by Youtuber PapaJefé\footnote{https://www.youtube.com/watch?v=45kwOEhKbUg}, or this guide made by Mickaël Laurent\footnote{https://e-sh4rk.github.io/ACE3/}), rather, my purpose is to illustrate and figure out why and how does ACE happen, using Pokémon Emerald as a basis for it.
 
 To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the Boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where \textit{Glitzer popping} comes into play: as previously stated it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box (an example can be seen in Table \ref{tab:boxes_names}).
@@ -136,7 +143,7 @@ So when the player moves the cursor to the first slot in their team, the cursor 
 Each time the party Pokémon selection pointer moves to a new party slot, an anti-cheat verification routine is triggered for the selected "Pokémon" (because the game thinks it is, but it's actually not). If the checksum of the selected data block (interpreted as a Pokémon) is invalid, the game modifies it into a Bad Egg, which is the result of the anti-cheating protocol, a bad egg is what the game sees as a "cheated" or invalid Pokémon. This transformation involves setting the Egg Status flag to 1 and enabling two additional bits, which designate the Egg as a "Bad" Egg. Since the memory blocks being interpreted as party Pokémon are not genuine Pokémon structures, their checksums will almost always be invalid—unless the slot is empty.
 
 \subsubsection{\textbf{Pokémon data structure}}
-
+\label{sec:data_structure}
 The Egg Status flag can reside in one of four different locations within a Pokémon's data structure. It is part of one of the four substructures that make up a Pokémon which can be seen in figure \ref{fig:pokemon-data-structure} (credits to Bulbapedia\footnote{https://bulbapedia.bulbagarden.net/wiki/Pokémon\_data\_substructures\_(Generation\_III)}), and the order of these substructures is determined by the Pokémon's Personality Value (PID modulo 24). Because these substructures are encrypted using the Pokémon’s PID and the Trainer ID (TID), setting the Egg Status flag to 1 can result in either a bit value of 1 or 0, depending on the result of \texttt{PID} XOR \texttt{TID}. In contrast, the two bits that define a "Bad" Egg are always located at fixed positions, and they are consistently set to 1 when a checksum is invalid. These bit modifications are what cause memory corruption in RAM. However, since only three bits are affected within a block of 100 bytes, the resulting corruption is minimal.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,8 +190,8 @@ However, even when using the Egg State Flag corruption technique, which successf
 
 To mitigate these problems and produce a clean, stable result, an advanced technique involves performing two successive \textit{Glitzer Popping} procedures, first corrupting the PID, and then the TID (or vice versa) in a way that ensures the Pokémon ends up with a valid checksum, a desired change in substructure order, and, importantly, a restoration of its original encryption key through the reversal of the PID or TID alteration. This dual-step approach ensures that the corrupted Pokémon retains its intended modifications while eliminating residual glitched values, effectively enabling the precise and consistent corruption of nearly any Pokémon without the drawbacks typically associated with such manipulations.
 
-\subsubsection{\textbf{The exploit}}
-
+\subsubsection{\textbf{Running the code}}
+\label{sec:running_the_code}
 By changing the names of the boxes, for example as seen in table \ref{tab:boxes_names}, when the cursor moves on the invalid Pokémon, what actually happens is that
 
 \begin{table}
@@ -232,13 +239,17 @@ By changing the names of the boxes, for example as seen in table \ref{tab:boxes_
 
 
 \subsubsection{\textbf{What actually goes on behind the scenes}}
+\label{sec:behind_the_scenes}
 
 
 \section{\textbf{State of the art chapter}}
+\label{sec:state_of_the_art}
 \subsection{\textbf{What is the situation today}}
+\label{sec:today}
 
 
 \subsection{\textbf{Current studies on security and improvements on protections}}
+\label{sec:current_studies}
 
 
 
