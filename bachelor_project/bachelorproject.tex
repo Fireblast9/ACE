@@ -65,7 +65,14 @@ These vulnerabilities can be exploited through various means, including buffer o
 
 \section{Pokémon Emerald: A Case Study of Arbitrary Code Execution}
 \label{sec:case_study}
-In this section, we explore how players can manipulate the inner workings of \textit{Pokémon Emerald} to execute their own code within the game, a phenomenon that occurs through ACE. This process is made possible by chaining together several in-game glitches that interact in unintended ways, ultimately allowing the player to influence memory and control the game’s behavior.
+In this section, we explore how players can manipulate the inner workings of \textit{Pokémon Emerald} to execute their own code within the game, a phenomenon that occurs through ACE. This process is made possible by chaining together several in-game glitches that interact in unintended ways as seen in image \ref{fig:ace_scheme}, ultimately allowing the player to influence memory and control the game’s behavior.
+
+\begin{figure}[h!]
+	\center{\includegraphics
+		{figures/ace\_img.png}}
+	\caption{A scheme illustrating the process to achieve ACE}\label{fig:ace_scheme}
+\end{figure}
+
 The starting point for this chain is the \textit{Pomeg glitch} (Chapter~\ref{sec:pomeg_glitch}), a glitch that allows the player to reduce a Pokémon’s HP below zero outside of battle, causing the game to enter an invalid state. When attempting to initiate a battle under these conditions, the game creates a placeholder Pokémon to avoid crashing, unknowingly opening the door to deeper exploitation. By examining this placeholder in battle, players can set up conditions to trigger another glitch known as \textit{Glitzer Popping} (Chapter~\ref{sec:glitzer_popping}), which involves renaming PC storage boxes in a precise way. This process, along other steps, ultimately leads the game into treating the renamed data as if it were valid Pokémon data, and eventually as executable code.
 This setup causes memory to be misread and reinterpreted and with careful planning, players can direct the game to areas of memory that contain useful data, or even custom payloads, by taking advantage of how the game processes corrupted or invalid Pokémon entries. While this avoids the need for external tools or hacking devices, rendering this types of manipulations doable on any type of hardware, the level of control granted is surprisingly deep, even able to altering game logic and spawning items or Pokémon at will.
 This can become a serious issue, as, although technically impressive and often used for speedrunning, this type of ACE could have lead to a monetary loss for the Pokémon Company. This is because, when the game originally came out in 2004, the company used to hold special in-person events where some rare Pokémon were given out to players (and this used to be the only way to get these Pokémon), as such, for anyone to be able to "generate" them through a couple of glitches it would be a problem for the company, as the players did not need to attend this highly publicized events to get the Pokémon.
@@ -194,9 +201,12 @@ However, even when using the Egg State Flag corruption technique, which successf
 
 To mitigate these problems and produce a clean, stable result, an advanced technique involves performing two successive \textit{Glitzer Popping} procedures, first corrupting the PID, and then the TID (or vice versa) in a way that ensures the Pokémon ends up with a valid checksum, a desired change in substructure order, and, importantly, a restoration of its original encryption key through the reversal of the PID or TID alteration. This dual-step approach ensures that the corrupted Pokémon retains its intended modifications while eliminating residual glitched values, effectively enabling the precise and consistent corruption of nearly any Pokémon without the drawbacks typically associated with such manipulations.
 
+Returning to the main topic, it's actually possible to switch some important bytes of a Pokémon's own data structure (IVs and the species ID) leading to the creation of a stable "glitch Pokémon", stable because the checksum doesn't fail due to the corruption being controlled. In this case the corruption of the "Bad egg" will be minimal and as such the egg will end up being able to be hatched normally. This glitchmon, upon being hatched, will try to play its sprite animation (as every Pokémon does when being hatched \textit{Pokémon Emerald}); certain glitchmons have these animations data actually stored in the RAM, close the the Boxes data. When trying to play this sprite animation, the game will try to figure out which sprite animation to play by moving the cursor to the address listed in the Pokémon's data, however, due to the Pokémon itself being corrupted, the address ends up being outside the normal table of the animation sprites, and due to how low-level programming languages work the program doesn't fail if it reads something that is outside of its intended bounds, it actually reads something "random". However, this "random" data ends up pointing at the beginning of the boxes names, and  is actually the code that we have written in the boxes names.
+
 \subsubsection{\textbf{Running the code}}
 \label{sec:running_the_code}
-By changing the names of the boxes, for example as seen in table \ref{tab:boxes_names}, when the cursor moves on the invalid Pokémon, what actually happens is that
+When a Pokémon egg hatches, a small animation gets played, and the game will then try to read the Pokémon data from the memory. This is where the code gets executed: when the game tries to read the name of the box, it will actually read the code that we have written in it. The game will then execute this code, which can be anything from a simple command to a complex script. This is how we can execute arbitrary code in the game.
+By changing the names of the boxes, for example as seen in table \ref{tab:boxes_names}
 
 \begin{table}
 	\begin{tabular}{|l|l|l|p{6cm}|}
@@ -241,9 +251,6 @@ By changing the names of the boxes, for example as seen in table \ref{tab:boxes_
 	\caption{Explanation of the commands seen in Table \ref{tab:boxes_names}}
 \end{table}
 
-
-\subsubsection{\textbf{What actually goes on behind the scenes}}
-\label{sec:behind_the_scenes}
 
 
 \section{Detecting and Preventing Arbitrary Code Execution}
