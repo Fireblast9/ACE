@@ -65,7 +65,7 @@ These vulnerabilities can be exploited through various means, including buffer o
 
 \section{Pokémon Emerald: A Case Study of Arbitrary Code Execution}
 \label{sec:case_study}
-In this section, we explore how players can manipulate the inner workings of \textit{Pokémon Emerald} to execute their own code within the game, a phenomenon that occurs through ACE. This process is made possible by chaining together several in-game glitches that interact in unintended ways as seen in image \ref{fig:ace_scheme}, ultimately allowing the player to influence memory and control the game’s behavior.
+In this section, we explore how players can manipulate the inner workings of \textit{Pokémon Emerald} to execute their own code within the game, a phenomenon that occurs through ACE. This process is made possible by chaining together several in-game glitches that interact in unintended ways as seen in figure \ref{fig:ace_scheme}, ultimately allowing the player to influence memory and control the game’s behavior.
 
 \begin{figure}[h!]
 	\center{\includegraphics
@@ -205,8 +205,9 @@ Returning to the main topic, it's actually possible to switch some important byt
 
 \subsubsection{\textbf{Running the code}}
 \label{sec:running_the_code}
-When a Pokémon egg hatches, a small animation gets played, and the game will then try to read the Pokémon data from the memory. This is where the code gets executed: when the game tries to read the name of the box, it will actually read the code that we have written in it. The game will then execute this code, which can be anything from a simple command to a complex script. This is how we can execute arbitrary code in the game.
-By changing the names of the boxes, for example as seen in table \ref{tab:boxes_names}
+When a Pokémon egg hatches, a small animation gets played, and the game will then try to read the Pokémon data from the memory. This is where the code gets executed: when the game tries to read and then execute the code corresponding to the animation, instead it ends up reading and trying to execute the name of the boxes. This is ultimately where, by naming the boxes in a specific way (such as seen in table \ref{tab:boxes_names}), the game will execute this code, which can stretch from generating an unavailable Pokémon all the way to being able to run your own custom events.
+
+As seen in table \ref{tab:boxes_names_explanation}, the code that gets executed ultimately ends up actually being a series of ARM assembly instructions, which are then executed by the game. The game is capable of executing these instructions because it is built on top of an ARM architecture, which is a type of CPU architecture that is commonly used in mobile devices and embedded systems. The ARM architecture is a low-level programming language, which is what allows the game to execute these instructions directly, and they are executed in a specific order and they are written in a specific format that is then decoded by the CPU and executed.
 
 \begin{table}
 	\begin{tabular}{|l|l|l|p{6cm}|}
