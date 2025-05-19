@@ -4,6 +4,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% PACKAGES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{float}
 \usepackage{amsmath}
+\usepackage{subfig}
+\usepackage{graphicx}
 
 %%% Main Body %%%
 
@@ -68,14 +70,14 @@ These vulnerabilities can be exploited through various means, including buffer o
 In this section, we explore how players can manipulate the inner workings of \textit{Pokémon Emerald} to execute their own code within the game, a phenomenon that occurs through ACE. This process is made possible by chaining together several in-game glitches that interact in unintended ways as seen in figure \ref{fig:ace_scheme}, ultimately allowing the player to influence memory and control the game’s behavior.
 
 \begin{figure}[h!]
-	\center{\includegraphics
+	\center{\includegraphics[width=0.5\textwidth]
 		{figures/ace\_img.png}}
 	\caption{A scheme illustrating the process to achieve ACE}\label{fig:ace_scheme}
 \end{figure}
 
 The starting point for this chain is the \textit{Pomeg glitch} (Chapter~\ref{sec:pomeg_glitch}), a glitch that allows the player to reduce a Pokémon’s HP below zero outside of battle, causing the game to enter an invalid state. When attempting to initiate a battle under these conditions, the game creates a placeholder Pokémon to avoid crashing, unknowingly opening the door to deeper exploitation. By examining this placeholder in battle, players can set up conditions to trigger another glitch known as \textit{Glitzer Popping} (Chapter~\ref{sec:glitzer_popping}), which involves renaming PC storage boxes in a precise way. This process, along other steps, ultimately leads the game into treating the renamed data as if it were valid Pokémon data, and eventually as executable code.
 This setup causes memory to be misread and reinterpreted and with careful planning, players can direct the game to areas of memory that contain useful data, or even custom payloads, by taking advantage of how the game processes corrupted or invalid Pokémon entries. While this avoids the need for external tools or hacking devices, rendering this types of manipulations doable on any type of hardware, the level of control granted is surprisingly deep, even able to altering game logic and spawning items or Pokémon at will.
-This can become a serious issue, as, although technically impressive and often used for speedrunning, this type of ACE could have lead to a monetary loss for the Pokémon Company. This is because, when the game originally came out in 2004, the company used to hold special in-person events where some rare Pokémon were given out to players (and this used to be the only way to get these Pokémon), as such, for anyone to be able to "generate" them through a couple of glitches it would be a problem for the company, as the players did not need to attend this highly publicized events to get the Pokémon.
+This can become a serious issue, as, although technically impressive and often used only for speedrunning, this type of ACE could have lead to a monetary loss for the Pokémon Company. This is because, when the game originally came out in 2004, the company used to hold special in-person events where some rare Pokémon were given out to players (and this used to be the only way to get these Pokémon), as such, for anyone to be able to "generate" them through a couple of glitches it would be a problem for the company, as the players did not need to attend this highly publicized events to get the Pokémon.
 
 
 \subsection{\textbf{The Pomeg glitch}}
@@ -86,7 +88,7 @@ The HP statistic is calculated through the following formula:
 
 \begin{equation}
 	\text{HP} = \left( \frac{(2 \times \text{Base} + \text{IV} + \left( \frac{\text{EV}}{4} \right)) \times \text{Level}}{100} \right) + \text{Level} + 10
-	\label{eq:ergodic_hypothesis}
+	\label{eq:pokemon_hp_formula}
 \end{equation}
 
 This formula gives us the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{pomeg glitch}, the only relevant variable is the EV value: this is because the EV value is the only statistic that can be directly modified based on the actions of the player. It is a number between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{pomeg glitch}, the player can use a specific item called \textit{Pomeg berry} to lower the EV value of a Pokémon by 10. However, if, for example, the Pokémon's current HP was at 1, when updating the newly calculated HP statistic, both the current HP and max HP get lowered and as such, the game could set the current HP value to 0, or, even worse, something below it, like underflowing to $ 2^{16}-1$ or 65535 HP (due to the HP statistic being an unsigned two-bytes integer). Now, to use a \textit{Pomeg berry} the player needs to not be in the combat state, and this can create some issues because the game is only capable of handling game overs (which happens when all of the player's Pokémon reach 0 HP) if the player is in a combat state. The problem arises in the situation where the Pokémon whose HP is being updated is the only one with $HP > 1$, because the player may ends up with a party of only dead Pokémon, as can be seen in figure \ref{fig:dead_team}.
@@ -109,14 +111,14 @@ At this point, the player can try to: fight, run away or use an item, all option
 
 \subsection{\textbf{Glitzer Popping}}
 \label{sec:glitzer_popping}
-The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Glitzer popping}, is a glitch that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some ARM-Assembly code that will be executed when the game tries to read the name of the box. The player can rename the boxes in many different ways, obtaining different results spanning from obtaining event-exclusive items or Pokémon (for Pokémon Emerald many events were held in-person at some specific locations), to modify player information or game flags, all the way to being able to execute custom scripts (like creating your own events). "But how do we get the game to read the name of the box to the point where it gets executed?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
+The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Glitzer popping}, is a glitch that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some ARM-Assembly code (since Pokémon Emerald is written in C and ARM-Assembly) that will be executed when the game tries to read the name of the box. The player can rename the boxes in many different ways, obtaining different results spanning from obtaining event-exclusive items or Pokémon (for Pokémon Emerald many events were held in-person at some specific locations), to modify player information or game flags, all the way to being able to execute custom scripts (like creating your own events). "But how do we get the game to read the name of the box to the point where it gets executed?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
 
 
 \subsubsection{\textbf{The setup}}
 \label{sec:setup}
 First things first, this thesis is not a tutorial on how to achieve this glitches, as there are countless fantastic other guides about replicating them (like this video made by Youtuber PapaJefé\footnote{https://www.youtube.com/watch?v=45kwOEhKbUg}, or this guide made by Mickaël Laurent\footnote{https://e-sh4rk.github.io/ACE3/}), rather, my purpose is to illustrate and figure out why and how does ACE happen, using Pokémon Emerald as a basis for it.
 
-To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the Boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where \textit{Glitzer popping} comes into play: as previously stated it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box (an example can be seen in Table \ref{tab:boxes_names}).
+To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the Boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where \textit{Glitzer popping} comes into play: as previously stated it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box (an example can be seen in Table \ref{tab:boxes_names}; \textbf{note}: in the game, the three dots represent by a single character "\dots").
 
 \begin{table}[h!]
 	\centering
@@ -147,27 +149,61 @@ To actually start executing some arbitrary code we need two things: the first on
 
 The game is not capable of handling the situation where the player has a Decamark in their team, and as such when the player tries to open their team information in battle it will unsuccessfully try to read the Pokémon's data from the memory, leaving instead a blank Pokémon.
 
-% insert image here
-
 So when the player moves the cursor to the first slot in their team, the cursor actually underflows and goes to slot 256  (since a team is made up of a maximum of 6 Pokémon) and as such, instead of scrolling through slots 1-6, we player has access to slots 255 and above (as the cursor is technically out of bounds). However, slots outside the first 6 aren't meant to be Pokémon slots, so the game accesses random blocks of RAM data and treats them as Pokémon, even though they are not. In this case the 255th party slot is actually the PC Pokémon data and continuing to scroll upwards allows the player to actually go over memory addresses reserved for various in-game data.
 
-Each time the party Pokémon selection pointer moves to a new party slot, an anti-cheat verification routine is triggered for the selected "Pokémon" (because the game thinks it is, but it's actually not). If the checksum of the selected data block (interpreted as a Pokémon) is invalid, the game modifies it into a Bad Egg, which is the result of the anti-cheating protocol, a bad egg is what the game sees as a "cheated" or invalid Pokémon. This transformation involves setting the Egg Status flag to 1 and enabling two additional bits, which designate the Egg as a "Bad" Egg. Since the memory blocks being interpreted as party Pokémon are not genuine Pokémon structures, their checksums will almost always be invalid—unless the slot is empty.
+Each time the party Pokémon selection pointer moves to a new party slot, an anti-cheat verification routine is triggered for the selected "Pokémon" (because the game thinks it is, but it's actually not). If the checksum of the selected data block (interpreted as a Pokémon) is invalid, the game modifies it into a Bad Egg, which is the result of the anti-cheating protocol, a bad egg is what the game sees as a "cheated" or invalid Pokémon. This transformation involves setting the Egg Status flag to 1 and enabling two additional bits, which designate the Egg as a "Bad" Egg, whose in-game aspect can be seen in figure \ref{fig:bad_egg}. Since the memory blocks being interpreted as party Pokémon are not genuine Pokémon structures, their checksums will almost always be invalid unless the slot is empty, or accurately prepared.
+
+\begin{figure}[h!]
+	\center{\includegraphics
+		{figures/bad_egg.png}}
+	\caption{A corrupted Pokémon that got labeled as a "Bad Egg"}\label{fig:bad_egg}
+\end{figure}
 
 \subsubsection{\textbf{Pokémon data structure}}
 \label{sec:data_structure}
-The Egg Status flag can reside in one of four different locations within a Pokémon's data structure. It is part of one of the four substructures that make up a Pokémon which can be seen in figure \ref{fig:pokemon-data-structure} (credits to Bulbapedia\footnote{https://bulbapedia.bulbagarden.net/wiki/Pokémon\_data\_substructures\_(Generation\_III)}), and the order of these substructures is determined by the Pokémon's Personality Value (PID modulo 24). Because these substructures are encrypted using the Pokémon’s PID and the Trainer ID (TID), setting the Egg Status flag to 1 can result in either a bit value of 1 or 0, depending on the result of \texttt{PID} XOR \texttt{TID}. In contrast, the two bits that define a "Bad" Egg are always located at fixed positions, and they are consistently set to 1 when a checksum is invalid. These bit modifications are what cause memory corruption in RAM. However, since only three bits are affected within a block of 100 bytes, the resulting corruption is minimal.
+A Pokémon's data structure is made up of 100 bytes (which can be seen in figure \ref{fig:full-pokemon-structure}), with many static (in the sense that once created they never get modified again) and some other dynamic fields (in the sense that they can be modified during the game). The static fields are used to store information about the Pokémon, such as its species, nickname, and trainer ID (TID, which is a 4-bytes long integer ranging from 0 to 65'535 that gets generated when the player starts the game for the first time), while the dynamic fields are used to store information about the Pokémon's current state, such as its level, experience points, current HP, etc.
+The order of these informations remains the same for every Pokémon except for the "Inner data" substructure (the substructure that starts at offset 0x20 in figure \ref{fig:full-pokemon-structure}) which contains other generic information about the Pokémon: the structure is divided into four substructures, each of which is 12 bytes long. The first substructure contains the growth information, the second one contains the attacks, the third one contains the EVs and condition, and the last one contains miscellaneous information.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%% TODO: Replace with actual table %%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}[h!]
-	\center{\includegraphics[width=\textwidth]
-		{figures/sub-structure.png}}
-	\caption{Pokémon Data Structure by Substructure}
-	\label{fig:pokemon-data-structure}
-\end{figure}
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Name}          & \textbf{Offset (hex)} & \textbf{Length (bytes)} \\
+		\hline
+		Personality value      & 0x00                  & 4                       \\
+		OT ID                  & 0x04                  & 4                       \\
+		Nickname               & 0x08                  & 10                      \\
+		Language               & 0x12                  & 1                       \\
+		Misc. Flags            & 0x13                  & 1                       \\
+		OT name                & 0x14                  & 7                       \\
+		Markings               & 0x1B                  & 1                       \\
+		Checksum               & 0x1C                  & 2                       \\
+		Padding                & 0x1E                  & 2                       \\
+		Inner data (encrypted) & 0x20                  & 48                      \\
+		Status condition       & 0x50                  & 4                       \\
+		Level                  & 0x54                  & 1                       \\
+		Mail ID                & 0x55                  & 1                       \\
+		Current HP             & 0x56                  & 2                       \\
+		Total HP               & 0x58                  & 2                       \\
+		Attack                 & 0x5A                  & 2                       \\
+		Defense                & 0x5C                  & 2                       \\
+		Speed                  & 0x5E                  & 2                       \\
+		Sp. Attack             & 0x60                  & 2                       \\
+		Sp. Defense            & 0x62                  & 2                       \\
+		\hline
+	\end{tabular}
+	\caption{Full Pokémon Data Structure (Generation III)}
+	\label{fig:full-pokemon-structure}
+\end{table}
 
-The substructure order, as previously said, is defined by a Pokémon's personality value (which is a random unsigned 32-bit integer that is generated at the exact moment a Pokémon gets 'created' in the game) modulo 24, the result is then mapped to the structure seen in table \ref{tab:substructure-order} where G stands for growth, A is attacks, E is EV \& condition and M is miscellaneous.
+This substructure is the most relevant for a Pokémon as it contains the most important information about the Pokémon itself, on top of being key to verify a Pokémon's data integrity. How that part is handled is that the order of these four substructures is determined by the Pokémon's Personality Value (PID, which is an 8-bytes long integer that gets generated when a Pokémon's data is first created) and the TID. The formula used to determine the order of the substructures is as follows:
+
+\begin{equation}
+	\left( \texttt{TID} \oplus \texttt{PID} \right) \bmod 24
+	\label{eq:substructure_order_formula}
+\end{equation}
+
+The game takes the TID and the PID, lengthens the TID by adding 0s to it and XORs it with the PID, and then takes the result modulo 24. The result of this calculation is then mapped directly to the substructure order table (table \ref{tab:substructure-order}) to determine the order of the substructures, where G stands for the growth substructure, A stands for the attacks one, E is the EVs and condition one and M is the miscellaneous substructure.
 
 \begin{table}[h!]
 	\centering
@@ -185,13 +221,49 @@ The substructure order, as previously said, is defined by a Pokémon's personali
 	\label{tab:substructure-order}
 \end{table}
 
+
+Because these substructures are encrypted using the Pokémon’s PID and the Trainer ID (TID), setting the Egg Status flag to 1 can result in either a bit value of 1 or 0, depending on the result of \texttt{PID} XOR \texttt{TID}. Out of all of the different locations within a Pokémon's data structure, the Egg Status flag resides in the miscellaneous slot, however, in contrast, the two bits that define a "Bad" Egg are always located at fixed positions at offset 0x13 of the Pokémon's data in the "Misc. flags" slot, and they are consistently set to 1 when a checksum is invalid.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|c|c||c|c||c|c||c|c|}
+			\hline
+			\multicolumn{2}{|c||}{\textbf{Growth}}          &
+			\multicolumn{2}{c||}{\textbf{Attacks}}          &
+			\multicolumn{2}{c||}{\textbf{EVs \& Condition}} &
+			\multicolumn{2}{c|}{\textbf{Miscellaneous}}                                                                              \\
+			\hline
+			\textbf{Name}                                   & \textbf{Bytes} &
+			\textbf{Name}                                   & \textbf{Bytes} &
+			\textbf{Name}                                   & \textbf{Bytes} &
+			\textbf{Name}                                   & \textbf{Bytes}                                                         \\
+			\hline
+			Species                                         & 2              & Move 1 & 2 & HP EV      & 1 & Pokérus status      & 1 \\
+			Item held                                       & 2              & Move 2 & 2 & Attack EV  & 1 & Met location        & 1 \\
+			Experience                                      & 4              & Move 3 & 2 & Defense EV & 1 & Origins info        & 2 \\
+			PP bonuses                                      & 1              & Move 4 & 2 & Speed EV   & 1 & IVs, Egg, Ability   & 4 \\
+			Friendship                                      & 1              & PP 1   & 1 & Sp. Atk EV & 1 & Ribbons + Obedience & 4 \\
+			Unused                                          & 2              & PP 2   & 1 & Sp. Def EV & 1 &                     &   \\
+			                                                &                & PP 3   & 1 & Coolness   & 1 &                     &   \\
+			                                                &                & PP 4   & 1 & Beauty     & 1 &                     &   \\
+			                                                &                &        &   & Cuteness   & 1 &                     &   \\
+			                                                &                &        &   & Smartness  & 1 &                     &   \\
+			                                                &                &        &   & Toughness  & 1 &                     &   \\
+			                                                &                &        &   & Feel       & 1 &                     &   \\
+			\hline
+		\end{tabular}
+		\caption{Pokémon Data Structure by Substructure (12-bytes blocks)}
+		\label{table:pokemon-data-structure}
+	\end{center}
+\end{table}
+
 \newpage
 
 An additional layer of randomness is introduced by the DMA (Direct Memory Access) system, which is another built-in anti-cheat mechanism that shifts the RAM addresses of numerous data structures whenever the player performs actions such as entering a battle, going through a doorway, or opening the in-game Bag. The DMA remaps memory addresses using a translation table of multiple double-words. Any value subjected to DMA can occupy up to 32 different memory addresses, each spaced by 4 bytes (a double-word).
 
 Importantly, party Pokémon are not affected by DMA, which means the memory addresses of the six standard party slots remain fixed. However, any data read from memory locations beyond the sixth slot \textit{is} subject to DMA. Since each party Pokémon occupies 25 double-words, and DMA remapping allows up to 32 double-word shifts, each double-word in a slot beyond the sixth could potentially be placed at an address susceptible to corruption via the Egg Status bit alterations. Due to the variability in both RAM content and corruption locations, these elements may interact unpredictably, sometimes preventing a given double-word from being corrupted by the Egg-related flags.
 
-Through the use of carefully planned strategies (like the \textit{Glitzer Popping}), it becomes possible to intentionally corrupt specific values within the data of a Pokémon, while simultaneously ensuring that surrounding data remains unaffected, thus enabling a form of highly targeted or pinpoint corruption. This capability allows for the precise manipulation of a Pokémon's PID (Personality ID) and/or TID (Trainer ID) within the PC storage system, without altering the remainder of the Pokémon’s structured data. Since both the PID and TID serve a crucial role in encrypting Pokémon’s four internal substructures, with each one containing different categories of the Pokémon’s information, the corruption of these values causes a dramatic shift in the Pokémon’s checksum, which functions as a form of data integrity verification.
+Through the use of carefully planned strategies (like the \textit{Glitzer Popping}), it becomes possible to intentionally corrupt specific values within the data of a Pokémon, while simultaneously ensuring that surrounding data remains unaffected, thus enabling a form of highly targeted or pinpoint corruption. This capability allows for the precise manipulation of a Pokémon's PID and/or TID within the PC storage system, without altering the remainder of the Pokémon’s structured data. Since both the PID and TID serve a crucial role in encrypting Pokémon’s four internal substructures, with each one containing different categories of the Pokémon’s information, the corruption of these values causes a dramatic shift in the Pokémon’s checksum, which functions as a form of data integrity verification.
 
 Among the known corruption methods, the two specific bits responsible for creating so-called "Bad Eggs" are not suitable for intentional and controlled Pokémon data corruption, as they invariably fail to preserve the checksum, rendering the resulting data unstable and largely unusable. In contrast, a more nuanced method (corruption via the Egg State Flag) offers a much more promising avenue, as it allows for manipulation while keeping the checksum intact. This method alters the checksum by a multiple of 0x4000, and because the checksum is stored as a 16-bit word, any change that corresponds to an even multiple leaves the checksum effectively unchanged. Although there exist certain rare conditions under which this multiple might be odd, thus compromising the checksum, these conditions can be easily identified and prevented, allowing for a consistently reliable corruption method that keeps the data within safe bounds.
 
@@ -201,13 +273,39 @@ However, even when using the Egg State Flag corruption technique, which successf
 
 To mitigate these problems and produce a clean, stable result, an advanced technique involves performing two successive \textit{Glitzer Popping} procedures, first corrupting the PID, and then the TID (or vice versa) in a way that ensures the Pokémon ends up with a valid checksum, a desired change in substructure order, and, importantly, a restoration of its original encryption key through the reversal of the PID or TID alteration. This dual-step approach ensures that the corrupted Pokémon retains its intended modifications while eliminating residual glitched values, effectively enabling the precise and consistent corruption of nearly any Pokémon without the drawbacks typically associated with such manipulations.
 
-Returning to the main topic, it's actually possible to switch some important bytes of a Pokémon's own data structure (IVs and the species ID) leading to the creation of a stable "glitch Pokémon", stable because the checksum doesn't fail due to the corruption being controlled. In this case the corruption of the "Bad egg" will be minimal and as such the egg will end up being able to be hatched normally. This glitchmon, upon being hatched, will try to play its sprite animation (as every Pokémon does when being hatched \textit{Pokémon Emerald}); certain glitchmons have these animations data actually stored in the RAM, close the the Boxes data. When trying to play this sprite animation, the game will try to figure out which sprite animation to play by moving the cursor to the address listed in the Pokémon's data, however, due to the Pokémon itself being corrupted, the address ends up being outside the normal table of the animation sprites, and due to how low-level programming languages work the program doesn't fail if it reads something that is outside of its intended bounds, it actually reads something "random". However, this "random" data ends up pointing at the beginning of the boxes names, and  is actually the code that we have written in the boxes names.
 
 \subsubsection{\textbf{Running the code}}
 \label{sec:running_the_code}
-When a Pokémon egg hatches, a small animation gets played, and the game will then try to read the Pokémon data from the memory. This is where the code gets executed: when the game tries to read and then execute the code corresponding to the animation, instead it ends up reading and trying to execute the name of the boxes. This is ultimately where, by naming the boxes in a specific way (such as seen in table \ref{tab:boxes_names}), the game will execute this code, which can stretch from generating an unavailable Pokémon all the way to being able to run your own custom events.
+Through the afore-mentioned glitches, it's possible to create a corrupted Pokémon that, when hatched due the stable corruption will have some of its data switched: due to the corruption of the PID and the TID, now the result of equation \ref{eq:substructure_order_formula} will be different, and as such the order of the substructures will be different, but it will maintain the previous values. For example a Pokémon whose checksum gave it an order of GAEM could (since the corruption has some casualty to it due to DMA) end up being ordered as EAGM, which means that the game will read the data in a different order than it was originally intended and if the HP EV value was 0x06 (6 in decimal) and the Attack EV value was 0x11 (17 in decimal), the game will now read the Species value as 0x0611 (since the Species value uses 2 bytes and the HP and Attack EVs only use 1) and vice-versa (this process can be seen visualised in figure \ref{fig:corruption_substructures}). This, as previously said, creates a problem when trying to reference the Pokémon's sprite animation, as the address of one's sprite animation is directly based on its species value.
 
-As seen in table \ref{tab:boxes_names_explanation}, the code that gets executed ultimately ends up actually being a series of ARM assembly instructions, which are then executed by the game. The game is capable of executing these instructions because it is built on top of an ARM architecture, which is a type of CPU architecture that is commonly used in mobile devices and embedded systems. The ARM architecture is a low-level programming language, which is what allows the game to execute these instructions directly, and they are executed in a specific order and they are written in a specific format that is then decoded by the CPU and executed.
+\begin{figure}[h!]
+	\center{\includegraphics[width=0.85\textwidth]
+		{figures/corruption_substructures.png}}
+	\caption{Visual representation of the corruption of the substructures}
+	\label{fig:corruption_substructures}
+\end{figure}
+
+Therefore, when a Pokémon egg hatches, the animation gets played (as shown in figure \ref{fig:sprite_animation}), and the game will then try to read the Pokémon data from the memory, however the address is not the one of a valid animation since in Pokémon Emerald only IDs of up to 0x0183 are occupied by actual animations.
+
+\begin{figure}[!htb]
+	\centering
+	\subfloat[First frame]{
+		\includegraphics[width=0.25\textwidth]{figures/charmander_hatch.png}}
+	\label{fig:First frame of the hatching animation}
+	\qquad
+	\subfloat[Second frame]{
+		\includegraphics[width=0.25\textwidth]{figures/char_animation.png}}
+	\label{fig:Second frame of the hatching animation}
+	\qquad
+	\subfloat[Final frame]{
+		\includegraphics[width=0.25\textwidth]{figures/char_end_animation.png}}
+	\label{fig:Final frame of the hatching animation}
+	\caption{Sprite animations}
+	\label{fig:sprite_animation}
+\end{figure}
+
+
+As seen in table \ref{tab:boxes_names_explanation}, the code that gets executed ultimately ends up actually being a series of ARM assembly instructions, which are then executed by the game. And this is ultimately where ACE happens: since ARM assembly is a low-level programming language, if the species ID points to a "wrong" or "unintended" entity, instead of crashing, it just reads and executes what is found there. In our example the table for the animations has entries up to 0x50, but since the function that handles this is capable of reading up to 0xFF and entry 0x6e is where the PC boxes names start.
 
 \begin{table}
 	\begin{tabular}{|l|l|l|p{6cm}|}
