@@ -31,3 +31,5 @@ https://problemkaputt.de/gbatek.htm#gbamemorymap - GBA memory map
 https://tasvideos.org/6616S#GlitzerPopping - Glitzer Popping
 
 https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_substructures_(Generation_III) - Pokemon data substructures
+
+https://www.researchgate.net/publication/221046284_G-Free_Defeating_Return-Oriented_Programming_through_Gadget-less_Binaries
