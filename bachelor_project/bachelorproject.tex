@@ -25,10 +25,14 @@ execution}}
 
 \end{committee}
 
-\abstract { Abstract goes here ...
-You may include up to six keywords or phrases. Keywords should be separated with semicolons. 
+\abstract {
+This thesis presents a case study of a real-world arbitrary code execution (ACE) exploit targeting Pokémon Emerald, a Game Boy Advance title, to explore the mechanics and implications of code reuse vulnerabilities on constrained platforms. By manipulating the game’s memory and control flow through crafted input, the attack achieves code execution without injecting new instructions, highlighting how even legacy systems without modern protections can be coerced into executing attacker-controlled behavior.
+
+To frame this case within a broader context, the thesis also surveys complementary defensive approaches about the detection and the prevention of ACE and ACE-like exploits. The first is vulnerability detection through deep learning, specifically using Long Short-Term Memory (LSTM) networks trained to identify remote code execution patterns in PHP source code. The second approach focuses on mitigation techniques at the compiler level, reviewing G-Free, a strategy for eliminating exploitable return instructions, and EC-CFI, a control-flow integrity system that enforces strict validation of all indirect control transfers.
+
+By combining the practical analysis of a concrete exploit with a review of contemporary defense strategies, this thesis illustrates the evolution of software exploitation and protection. It concludes by reflecting on the potential synergy between detection and mitigation techniques, and the relevance of compiler-based defenses even in low-level environments such as handheld gaming systems. 
 \\
-\textbf{Keywords}:
+\textbf{Keywords}: Arbitrary Code Execution, Software Security, Compiler-Based Security, Pokémon Emerald, Vulnerability Detection, Vulnerability Prevention
 
 }
 \begin{document}
@@ -41,7 +45,7 @@ In the world of software, security is one of the most critical concepts as it is
 
 The software we use is often complex and interconnected, making it difficult to distinguish what is secure and what isn't. In many cases, these programs are often developed quickly and with limited resources, and as a result, security is often an afterthought in the development process, leading to oversights or the introduction of vulnerabilities that can be exploited by attackers.
 
-One of the most common types\footnote{https://www.sciencedirect.com/topics/computer-science/arbitrary-code-execution} of these vulnerabilities is arbitrary code execution (ACE), which allows a malicious unauthorized user to execute some arbitrary code on a target system or in a specific application. This can happen because software or computer systems in general are not capable of differentiating between some generic text and actual commands, without some proper protections put in place.
+One of the most common types\footnote{https://www.sciencedirect.com/topics/computer-science/arbitrary-code-execution} of these vulnerabilities is ACE, which allows a malicious unauthorized user to execute some arbitrary code on a target system or in a specific application. This can happen because software or computer systems in general are not capable of differentiating between some generic text and actual commands, without some proper protections put in place.
 
 This then becomes a significantly serious issue as it can lead to unauthorized access to sensitive information, data loss, and even complete system compromise. These types of ACE vulnerabilities can be found in a wide range of software: including operating systems, web applications, and even video games. In fact, some of the most interesting ACE vulnerabilities have been found in video games like \textit{Super Mario World}\footnote{https://arstechnica.com/gaming/2014/01/how-an-emulator-fueled-robot-reprogrammed-super-mario-world-on-the-fly/}, where they have been used to allow users to literally "program" new games into the system to be played.
 
@@ -493,8 +497,18 @@ Although there is no direct technical integration between EC-CFI and detection m
 
 \section{Conclusions}
 
+This thesis has explored the mechanics of arbitrary code execution through a detailed case study of Pokémon Emerald, demonstrating how crafted inputs can subvert control flow and achieve unwanted behavior on constrained platforms. By reconstructing and analyzing the inner workings of this exploit, the study illustrates how systems lacking modern protections remain vulnerable to low-level memory manipulation, even without the presence of injected code or advanced gadget chaining techniques.
+
+To contextualize this case, the thesis examined two complementary lines of defense: detection and mitigation. The first involved the application of LSTM networks to source code analysis, enabling the early identification of potentially exploitable code patterns, such as unsanitized user input or unsafe function calls. This approach, while language and syntax-dependent, offers a scalable method of catching vulnerabilities during development, particularly in high-level languages like PHP.
+
+The second perspective focused on compiler-based mitigations, including G-Free and EC-CFI. G-Free provides targeted protection against return-oriented programming by eliminating or encrypting return instructions to prevent gadget chaining. EC-CFI generalizes this concept by enforcing control-flow integrity across all indirect transfers, including jumps and calls. Both approaches shift the burden of enforcement to the compiler, hardening binaries against a wide range of control-flow hijacking techniques.
+
+Although the techniques discussed were not directly applicable to the Game Boy Advance platform, they serve to highlight a broader principle: effective defense requires both proactive detection and robust enforcement. The case study exemplifies what can happen in the absence of structural controls, while the surveyed techniques demonstrate how modern systems can raise the bar for exploitation. In this light, detection and mitigation are not competing strategies but complementary components of a layered defense model.
+
+Ultimately, this thesis demonstrates that understanding real-world exploits, even on legacy systems, provides valuable insight into modern security challenges. Especially in an age where software security continues to often be overlooked, due often to both an absence of resource, the lessons learned from analyzing ACE vulnerabilities can inform better practices in software design, development, and deployment. By combining advanced detection methods with robust runtime protections, developers can create more resilient systems that are less susceptible to arbitrary code execution and other forms of exploitation.
 
 
+\section{Acknowledgements}
 
 
 
