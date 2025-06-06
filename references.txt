@@ -33,3 +33,34 @@ https://tasvideos.org/6616S#GlitzerPopping - Glitzer Popping
 https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_substructures_(Generation_III) - Pokemon data substructures
 
 https://www.researchgate.net/publication/221046284_G-Free_Defeating_Return-Oriented_Programming_through_Gadget-less_Binaries
+
+
+BPTT
+
+https://d2l.ai/chapter_recurrent-neural-networks/bptt.html
+
+https://d2l.ai/chapter_recurrent-neural-networks/bptt.html
+
+
+LSTMs
+
+https://pub.towardsai.net/introduction-to-deep-learning-part-2-rnns-and-ltsm-fc65c230713d
+
+https://colah.github.io/posts/2015-08-Understanding-LSTMs/
+
+
+ASLR
+
+https://www.ibm.com/docs/en/zos/2.4.0?topic=overview-address-space-layout-randomization
+
+https://devblogs.microsoft.com/oldnewthing/20241024-00/?p=110417
+
+JOP
+
+https://developer.arm.com/documentation/102433/0200/Jump-oriented-programming
+
+https://dl.acm.org/doi/10.1145/1966913.1966919
+
+COP 
+
+https://www.willsroot.io/2019/09/jump-oriented-programming-and-call.html
