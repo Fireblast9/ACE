@@ -7,6 +7,8 @@
 \usepackage{subfig}
 \usepackage{graphicx}
 \usepackage{svg}
+\usepackage{placeins}
+
 
 %%% Main Body %%%
 
@@ -45,9 +47,9 @@ In the world of software, security is one of the most critical concepts as it is
 
 The software we use is often complex and interconnected, making it difficult to distinguish what is secure and what isn't. In many cases, these programs are often developed quickly and with limited resources, and as a result, security is often an afterthought in the development process, leading to oversights or the introduction of vulnerabilities that can be exploited by attackers.
 
-One of the most common types\footnote{https://www.sciencedirect.com/topics/computer-science/arbitrary-code-execution} of these vulnerabilities is ACE, which allows a malicious unauthorized user to execute some arbitrary code on a target system or in a specific application. This can happen because software or computer systems in general are not capable of differentiating between some generic text and actual commands, without some proper protections put in place.
+One of the most common types of these vulnerabilities is ACE~\cite{websrc1}, which allows a malicious unauthorized user to execute some arbitrary code on a target system or in a specific application. This can happen because software or computer systems in general are not capable of differentiating between some generic text and actual commands, without some proper protections put in place.
 
-This can then become a significantly serious issue as it can lead to unauthorized access to sensitive information, data loss, and even complete system compromise. These types of ACE vulnerabilities can be found in a wide range of software: including operating systems, web applications, and even video games. In fact, some of the most interesting ACE vulnerabilities have been found in video games like \textit{Super Mario World}\footnote{https://arstechnica.com/gaming/2014/01/how-an-emulator-fueled-robot-reprogrammed-super-mario-world-on-the-fly/}, where they have been used to allow users to literally "program" new games into the system to be played.
+This can then become a significantly serious issue as it can lead to unauthorized access to sensitive information, data loss, and even complete system compromise. These types of ACE vulnerabilities can be found in a wide range of software: including operating systems, web applications, and even video games. In fact, some of the most interesting ACE vulnerabilities have been found in video games like \textit{Super Mario World} \cite{smw-ace}, where they have been used to allow users to literally "program" new games into the system to be played.
 
 In this thesis, we will explore the concept of ACE using a case study of the game \textit{Pokémon Emerald} (2004) to demonstrate how such vulnerabilities can be exploited. We will then examine the current state of ACE-related attacks and discuss modern techniques that can be used to mitigate them. We will also look at some of the most common techniques used to protect against these vulnerabilities, and how they can be prevented.
 
@@ -63,7 +65,7 @@ I'd like to start with a simple explanation of what arbitrary code execution is:
 
 This joke, illustrated in figure \ref{fig:updog} (credits to Smoovers\footnote{https://www.youtube.com/watch?v=-XmXYCXX7y4}) is an extremely simple but direct way of explaining what ACE is. In this case the joke is self-explanatory, but the idea behind it is that we end up saying something (\textit{"what's up dawg?"}) that is not what we intended to say (\textit{"what does updog mean?"}). This is extremely similar to what happens during ACE in the real world, where the system ends up executing code that we did not intend to execute, albeit with dramatically more complicated consequences.
 
-To get a bit more into the proper definition of things: ACE is a type of flaw or vulnerability that allows an attacker to execute some generally speaking malicious (or at least unauthorized) code on a target system\footnote{https://www.okta.com/identity-101/arbitrary-code-execution/}. Without proper protections and preventions put in place, an attacker can easily exploit these to gain access to sensitive information, take control of the system, or even cause damage to the system itself. The severity of this incidents can vary greatly: in the past these exploits have gone from something low-level like allowing gamers to better their speedrunning performances\footnote{https://www.youtube.com/watch?v=A2DlyLPr4Ws} (where speedrunning is the art of playing a video game with the goal of completing it as fast as possible), to something a fair bit more complicated, like leaking sensitive kernel memory on real world systems, as was the case in Retbleed\footnote{https://comsec.ethz.ch/research/microarch/retbleed/}.
+To get a bit more into the proper definition of things: ACE is a type of flaw or vulnerability that allows an attacker to execute some generally speaking malicious (or at least unauthorized) code on a target system \cite{websrc3}. Without proper protections and preventions put in place, an attacker can easily exploit these to gain access to sensitive information, take control of the system, or even cause damage to the system itself. The severity of this incidents can vary greatly: in the past these exploits have gone from something low-level like allowing gamers to better their speedrunning performances\cite{smw-speedrun} (where speedrunning is the art of playing a video game with the goal of completing it as fast as possible), to something a fair bit more complicated, like leaking sensitive kernel memory on real world systems, as was the case in Retbleed\cite{websrc6}.
 
 These vulnerabilities can be exploited through various means, including buffer overflows, code injection, and other techniques; however in the context of this case study, we examine at a specific example of ACE in the world of video games, specifically in the game \textit{Pokémon Emerald} where the techniques used to exploit the vulnerabilities are \textbf{arbitrary memory write} and \textbf{out-of-bounds writes}, which is where existing mechanics are used to place crafted instructions into writable areas of memory.
 
@@ -104,7 +106,7 @@ This formula yields the maximum HP of a Pokémon, which is the maximum amount of
 	\caption{A technically impossible state}\label{fig:dead_team}
 \end{figure}
 
-This is not a problem right as it happens, however if the player is to start a battle, the game will try to look for a Pokémon to fight with, and it will find none, because all of them are dead. So after unsuccessfully looking for a Pokémon, the game will then send out a \textbf{?-like} Pokémon (commonly known in the Pokémon community as \textbf{Decamark})\footnote{https://bulbapedia.bulbagarden.net/wiki/Ten\_question\_marks} as can be seen in figure \ref{fig:decamark}, which is used to prevent game crashes, as when the game fails to load a proper Pokémon sprite, the Decamark is used as a placeholder.
+This is not a problem right as it happens, however if the player is to start a battle, the game will try to look for a Pokémon to fight with, and it will find none, because all of them are dead. So after unsuccessfully looking for a Pokémon, the game will then send out a \textbf{?-like} Pokémon (commonly known in the Pokémon community as \textbf{Decamark})\cite{decamark} as can be seen in figure \ref{fig:decamark}, which is used to prevent game crashes, as when the game fails to load a proper Pokémon sprite, the Decamark is used as a placeholder.
 
 \begin{figure}[h!]
 	\center{\includegraphics
@@ -116,7 +118,7 @@ At this point, the player can try to fight, run away or use an item, all options
 
 \subsection{Glitzer Popping}
 \label{sec:glitzer_popping}
-The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Glitzer Popping}, is a glitch that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some ARM-Assembly code (since Pokémon Emerald is written in C and ARM-Assembly\footnote{https://pokemondb.net/pokebase/257153/what-programming-language-generations-series-games-written}) that will be executed when the game tries to read the name of the box. The player can rename the boxes in many different ways, obtaining different results spanning from obtaining event-exclusive items or Pokémon (for Pokémon Emerald many events were held in-person at some specific locations), to modify player information or game flags, all the way to being able to execute custom scripts (like creating your own events). "But how do we get the game to read the name of the box to the point where it gets executed?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
+The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Glitzer Popping}, is a glitch that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some ARM-Assembly code (since Pokémon Emerald is written in C and ARM-Assembly) that will be executed when the game tries to read the name of the box. The player can rename the boxes in many different ways, obtaining different results spanning from obtaining event-exclusive items or Pokémon (for Pokémon Emerald many events were held in-person at some specific locations), to modify player information or game flags, all the way to being able to execute custom scripts (like creating your own events). "But how do we get the game to read the name of the box to the point where it gets executed?" is the most logical follow-up question. The answer is simple: we need to use the \textit{Pomeg glitch}.
 
 
 \subsubsection{The setup}
@@ -332,10 +334,10 @@ As seen in table \ref{tab:boxes_names_explanation}, the code that gets executed 
 
 In chapter \ref{sec:case_study} we have seen how ACE can be achieved through the use of glitches in Pokémon Emerald, and how it is possible to execute some arbitrary code. In figure \ref{fig:ace_scheme} we saw how ACE is achievable through the chaining of glitches, and the first one of these, the \textit{Pomeg glitch}, is born out of a simple missing if statement that doesn't check if the Pokémon's HP is greater than 1 before trying to use the berry. This is a simple mistake that can be easily fixed nowadays, either through updates or patches, but in 2004 when the game originally released this was not possible. In this chapter we examine how ACE can be detected and prevented in modern systems, by analyzing recent research and case studies that represent the current state of the art in the field.
 
-Initially, in Chapter \ref{sec:today}, the focus is on detection, specifically through an analysis of the paper "Detection of Remote Code Execution Vulnerability in Website Source Codes Using LSTM Machine Learning Model" by Armin Zakarian and Muhammad Rahmani, published in 2024.\footnote{https://www.researchgate.net/publication/381650864\_Detection\_of\_Remote\_Code\_Execution\_vulnerability\_in\_website\_source\_codes\_using\_LSTM\_machine\_learning\_model} The paper addresses the detection of Remote Code Execution (RCE) vulnerabilities in web applications, a form of ACE that allows attackers to execute unintended code on a target system remotely.
+Initially, in Chapter \ref{sec:today}, the focus is on detection, specifically through an analysis of the paper "Detection of Remote Code Execution Vulnerability in Website Source Codes Using LSTM Machine Learning Model" by Armin Zakarian and Muhammad Rahmani, published in 2024.\cite{zakarian2024lstm} The paper addresses the detection of Remote Code Execution (RCE) vulnerabilities in web applications, a form of ACE that allows attackers to execute unintended code on a target system remotely.
 
 The authors propose a machine learning-based approach for detecting RCE vulnerabilities in web application source code, using LSTM networks to analyze program logic and identify potentially dangerous patterns.
-Following this, Chapter \ref{sec:current_studies} shifts the focus to prevention, with an analysis of two key papers: "EC-CFI: Control-Flow Integrity via Code Encryption Counteracting Fault Attacks" (2023) by Pascal Nashal, Salmin Sultana, Hans Liljestrand, et al.,\footnote{https://arxiv.org/abs/2301.13760} and "G-Free: Defeating Return-Oriented Programming through Gadget-less Binaries" (2010) by Kaan Onarlioglu, Leyla Bilge, Andrea Lanzi, Davide Balzarotti, et al. These works focus on preventing ACE vulnerabilities in embedded systems, which are often targeted by attackers due to their constrained resources and lack of built-in security mechanisms.
+Following this, Chapter \ref{sec:current_studies} shifts the focus to prevention, with an analysis of two key papers: "EC-CFI: Control-Flow Integrity via Code Encryption Counteracting Fault Attacks" (2023) by Pascal Nashal, Salmin Sultana, Hans Liljestrand, et al.,\cite{nasahl2023eccfi} and "G-Free: Defeating Return-Oriented Programming through Gadget-less Binaries" (2010) by Kaan Onarlioglu, Leyla Bilge, Andrea Lanzi, Davide Balzarotti, et al. These works focus on preventing ACE vulnerabilities in embedded systems, which are often targeted by attackers due to their constrained resources and lack of built-in security mechanisms.
 
 
 \subsection{Detection}
@@ -360,7 +362,7 @@ The LSTM-based detection approach presented by Zakarian and Rahmani offers a num
 
 That said, there are also important limitations to consider. One of the most immediate is the dependency on a well-labeled and representative dataset. In the original study, the model was trained exclusively on PHP code, which means its performance on other languages or frameworks is uncertain without retraining. Each language has its own syntax and security risks, and a model trained on one may not generalize to another without careful adaptation. In addition, while LSTMs are capable of capturing long-term dependencies, they are still not inherently interpretable; the model may flag a piece of code as dangerous, but without offering a clear explanation, which can reduce trust and make it harder for developers to take corrective action. Techniques such as attention mechanisms or post-hoc explainability tools could potentially be used to improve transparency, but these were not explored in the referenced study.
 
-From a computational standpoint, training deep learning models such as LSTMs is resource-intensive, requiring both time and hardware (typically GPUs) to process large datasets effectively. While prediction, once trained, is relatively fast, the training phase presents a barrier to entry for smaller teams or projects without dedicated machine learning infrastructure. Furthermore, the model’s effectiveness is tied to the quality of its training data; if the dataset is outdated or biased toward certain types of vulnerabilities, the model may fail to detect new or less common exploit patterns.
+From a computational standpoint, training deep learning models such as LSTMs is resource-intensive\cite{stacked-lstm-cost}, requiring both time and hardware (typically GPUs) to process large datasets effectively. While prediction, once trained, is relatively fast, the training phase presents a barrier to entry for smaller teams or projects without dedicated machine learning infrastructure. Furthermore, the model’s effectiveness is tied to the quality of its training data; if the dataset is outdated or biased toward certain types of vulnerabilities, the model may fail to detect new or less common exploit patterns.
 
 Despite these challenges, the approach has considerable potential for extension, especially with the advancements in the machine learning fields of the last years. With sufficient data and adjustments to preprocessing, the model could be adapted to other programming languages or application domains. For example: the same principles could be applied to smart contracts, embedded firmware, or interpreted game scripts, where code is similarly structured and context-sensitive. In the context of this thesis, which explores ACE in environments outside traditional web applications, the success of the LSTM model in learning RCE patterns suggests that machine learning could likewise be applied to detect or even prevent ACE in unconventional domains, given a suitable representation of the code or memory structure.
 
@@ -373,7 +375,7 @@ Ultimately, while still in early stages compared to traditional static analysis 
 Preventing ACE requires robust mechanisms that can enforce strict control over a program’s execution flow, especially in the presence of fault injection and memory corruption attacks. The paper titled \textit{"EC-CFI: Control-Flow Integrity via Code Encryption Counteracting Fault Attacks"} introduces a cryptographically enforced Control-Flow Integrity (CFI) scheme designed to counteract such threats at runtime. EC-CFI operates by encrypting code blocks and tightly coupling decryption with legitimate control-flow transitions, ensuring that only authorized instruction sequences can be executed. This method effectively blocks attempts to divert execution toward malicious or unintended code paths, which are characteristic of ACE exploits. The authors present a hardware-software co-design that allows encrypted instructions to be decrypted on-the-fly only when control transfers are validated against a predefined control-flow graph. Any unauthorized deviation results in execution failure, thereby neutralizing potential exploit vectors. The proposed technique is particularly effective against fault injection attacks, which aim to manipulate program behavior by corrupting control data. Experimental results demonstrate that EC-CFI offers strong security guarantees with modest performance overhead, making it suitable for deployment in resource-constrained environments such as embedded systems and IoT devices. By employing code encryption as a runtime enforcement mechanism rather than relying solely on static checks, EC-CFI presents a proactive and resilient approach to mitigating ACE risks. This work exemplifies a shift toward stronger, cryptographically-backed security primitives in control-flow enforcement, positioning itself as a forward-looking solution for future system architectures.
 
 % G-Free: defeating return-oriented programming through gadget-less binaries
-ACE vulnerabilities, particularly those exploited through Return-Oriented Programming (ROP) techniques, pose significant threats to software security. ROP is a specific exploitation method used to achieve ACE by chaining together small instruction sequences already present in a program’s memory, typically using return instructions to control flow; while ACE is the end goal, ROP is one of the strategies used to reach that goal, especially in environments protected against traditional code injection techniques like those that use Data Execution Prevention (DEP, a security feature that prevents code from being executed in certain regions of memory that are intended only for data). The paper titled \textit{"G-Free: Defeating Return-Oriented Programming through Gadget-less Binaries"} introduces a compiler-based approach designed to mitigate such threats by eliminating exploitable code sequences, known as "gadgets," from binary executables. G-Free operates by identifying and removing unaligned free-branch instructions, such as unintended \texttt{ret} (return) instructions that may arise due to instruction alignment, and by protecting aligned free-branch instructions through encryption mechanisms. Specifically, G-Free modifies the compiler backend to ensure that return addresses are encrypted upon function entry and decrypted before function return, thereby preventing attackers from manipulating return addresses to redirect control flow maliciously. This approach effectively neutralizes the primary mechanism by which ROP attacks chain together existing code snippets to perform unauthorized operations. The authors implemented G-Free as a prototype within the GNU Compiler Collection (GCC) and evaluated its effectiveness by compiling and testing real-world applications, including the GNU C Library (glibc). The results demonstrated that G-Free successfully eliminated usable gadgets without requiring source code modifications or additional runtime support, incurring an average performance overhead of only approximately 3\%. By proactively restructuring binaries to be "gadget-less," G-Free offers a practical and efficient defense against ACE vulnerabilities exploited through ROP, enhancing the overall security posture of compiled applications.
+ACE vulnerabilities, particularly those exploited through Return-Oriented Programming (ROP) techniques, pose significant threats to software security. ROP is a specific exploitation method used to achieve ACE by chaining together small instruction sequences already present in a program’s memory, typically using return instructions to control flow; while ACE is the end goal, ROP is one of the strategies used to reach that goal, especially in environments protected against traditional code injection techniques like those that use Data Execution Prevention (DEP, a security feature that prevents code from being executed in certain regions of memory that are intended only for data). The paper titled \textit{"G-Free: Defeating Return-Oriented Programming through Gadget-less Binaries"}\cite{onarlioglu2010gfree} introduces a compiler-based approach designed to mitigate such threats by eliminating exploitable code sequences, known as "gadgets," from binary executables. G-Free operates by identifying and removing unaligned free-branch instructions, such as unintended \texttt{ret} (return) instructions that may arise due to instruction alignment, and by protecting aligned free-branch instructions through encryption mechanisms. Specifically, G-Free modifies the compiler backend to ensure that return addresses are encrypted upon function entry and decrypted before function return, thereby preventing attackers from manipulating return addresses to redirect control flow maliciously. This approach effectively neutralizes the primary mechanism by which ROP attacks chain together existing code snippets to perform unauthorized operations. The authors implemented G-Free as a prototype within the GNU Compiler Collection (GCC) and evaluated its effectiveness by compiling and testing real-world applications, including the GNU C Library (glibc). The results demonstrated that G-Free successfully eliminated usable gadgets without requiring source code modifications or additional runtime support, incurring an average performance overhead of only approximately 3\%. By proactively restructuring binaries to be "gadget-less," G-Free offers a practical and efficient defense against ACE vulnerabilities exploited through ROP, enhancing the overall security posture of compiled applications.
 
 \subsubsection{G-Free: Compiler-Based Mitigation of Return-Oriented Programming}
 
@@ -389,7 +391,7 @@ ROP exploits rely on the ability to manipulate the call stack so that the return
 	\caption{A graphical illustration of a ROP attack\label{fig:rop}}
 \end{figure}
 
-This form of attack proved difficult to prevent using traditional countermeasures such as Address Space Layout Randomization (ASLR)\footnote{https://devblogs.microsoft.com/oldnewthing/20241024-00/?p=110417} or stack canaries alone. ASLR introduces variability into the memory layout, but on systems with limited entropy or known offsets, attackers can still reliably guess addresses. Stack canaries, while effective against simple buffer overflows, do not protect against control flow manipulation that does not overwrite the function's return path directly. As a result, a more comprehensive defense was needed, one that would directly address the mechanics of gadget-based exploitation.
+This form of attack proved difficult to prevent using traditional countermeasures such as Address Space Layout Randomization (ASLR)\cite{websrc5} or stack canaries alone. ASLR introduces variability into the memory layout, but on systems with limited entropy or known offsets, attackers can still reliably guess addresses. Stack canaries, while effective against simple buffer overflows, do not protect against control flow manipulation that does not overwrite the function's return path directly. As a result, a more comprehensive defense was needed, one that would directly address the mechanics of gadget-based exploitation.
 
 G-Free was introduced in response to this need: it addresses ROP by modifying the binary during compilation to eliminate or neutralize the elements required to construct a successful ROP chain. Rather than detecting ROP attacks at runtime, G-Free prevents them proactively by ensuring that the compiled binary contains no usable return-oriented gadgets, as such its defense strategy operates on two main fronts: gadget elimination and return address protection (RAP), both implemented as part of the compilation process.
 
@@ -500,11 +502,216 @@ To everyone I've mentioned, thank you for keeping me whole. Don't you dare go ho
 %%%%% BIBLIOGRAPHY %%%%%
 \bibliographystyle{abbrv}
 \bibliography{references}
+\begin{thebibliography}{99}
+
+	\bibitem{websrc1}
+	Overview of Arbitrary Code Execution (ACE) and its risks.\\
+	\url{https://www.okta.com/identity-101/arbitrary-code-execution/}\\
+	Last accessed: March 2025.
+
+	\bibitem{smw-ace}
+	How an emulator-fueled robot reprogrammed Super Mario World on the fly.\\
+	\textit{Ars Technica}, January 2014.\\
+	\url{https://arstechnica.com/gaming/2014/01/how-an-emulator-fueled-robot-reprogrammed-super-mario-world-on-the-fly/}\\
+	Last accessed: March 2025.
 
 
+
+	\bibitem{websrc3}
+	Explanation of ACE vulnerabilities in modern web systems.\\
+	\url{https://www.wallarm.com/what/arbitrary-code-execution-vulnerabilities}\\
+	Last accessed: March 2025.
+
+	\bibitem{smw-speedrun}
+	Super Mario World ACE Speedrun Demonstration.\\
+	YouTube, January 2014.\\
+	\url{https://www.youtube.com/watch?v=A2DlyLPr4Ws} \\
+	Last accessed: March 2025.
+
+
+
+	\bibitem{websrc6}
+	Retbleed: speculative code execution vulnerability.\\
+	\url{https://comsec.ethz.ch/research/microarch/retbleed/}\\
+	Last accessed: March 2025.
+
+	\bibitem{decamark}
+	Decamark - glitch Pokémon.\\
+	\url{https://bulbapedia.bulbagarden.net/wiki/Ten_question_marks}  \\
+	Last accessed: April 2025.
+
+
+
+	\bibitem{zakarian2024lstm}
+	Armin Zakarian and Muhammad Rahmani.
+	Detection of Remote Code Execution vulnerability in website source codes using LSTM machine learning model.
+	\url{https://www.researchgate.net/publication/381650864_Detection_of_Remote_Code_Execution_vulnerability_in_website_source_codes_using_LSTM_machine_learning_model}
+	Last accessed: June 2025.
+
+	\bibitem{nasahl2023eccfi}
+	Pascal Nasahl, Salmin Sultana, Hans Liljestrand, N. Asokan, et al.
+	EC-CFI: Control-Flow Integrity via Code Encryption Counteracting Fault Attacks.
+	In *Proceedings of the 2023 IEEE International Symposium on Hardware Oriented Security and Trust (HOST)*, pp. 52–63.
+	DOI: \url{https://doi.org/10.1109/HOST55118.2023.10132915}
+	Last accessed: June 2025.
+
+
+
+	\bibitem{stacked-lstm-cost}
+	Applications of Long Short‑Term Memory (LSTM) Networks – disadvantages of stacked LSTM models.  \\
+	MDPI Polymers, 2024.  \\
+	\url{https://www.mdpi.com/2073-4360/16/18/2607}  \\
+	Last accessed: June 2025.
+
+	\bibitem{onarlioglu2010gfree}
+	Kaan Onarlioglu, Leyla Bilge, Andrea Lanzi, Davide Balzarotti, and Angelos D. Keromytis.
+	G-Free: Defeating Return-Oriented Programming through Gadget-less Binaries.
+	In *Proceedings of the 26th Annual Computer Security Applications Conference (ACSAC)*, pp. 49–58.
+	DOI: \url{https://doi.org/10.1145/1920261.1920269}
+	Last accessed: June 2025.
+
+	\bibitem{websrc5}
+	Microsoft article on ASLR implementation.\\
+	\url{https://devblogs.microsoft.com/oldnewthing/20241024-00/?p=110417}\\
+	Last accessed: March 2025.
+
+	\bibitem{websrc7}
+	Article on ACE in Pokémon.\\
+	\url{https://glitchcity.wiki/wiki/Arbitrary_code_execution}\\
+	Last accessed: March 2025.
+
+
+	\bibitem{websrc2}
+	Demonstration of ACE via the `ldd` utility.\\
+	\url{https://catonmat.net/ldd-arbitrary-code-execution}\\
+	Last accessed: March 2025.
+
+	\bibitem{websrc8}
+	Description of the Pomeg Glitch in Pokémon games.\\
+	\url{https://glitchcity.wiki/wiki/Pomeg_glitch}\\
+	Last accessed: March 2025.
+
+	\bibitem{websrc4}
+	IBM documentation on ASLR as a mitigation for ACE.\\
+	\url{https://www.ibm.com/docs/en/zos/2.4.0?topic=overview-address-space-layout-randomization}\\
+	Last accessed: March 2025.
+
+
+
+
+
+	\bibitem{websrc9}
+	Bulbapedia entry on the Pomeg Glitch.\\
+	\url{https://bulbapedia.bulbagarden.net/wiki/Pomeg_glitch}\\
+	Last accessed: April 2025.
+
+
+	\bibitem{websrc10}
+	Details of the Glitzer Popping glitch.\\
+	\url{https://glitchcity.wiki/wiki/Pomeg_data_corruption_glitch}\\
+	Last accessed: April 2025.
+
+
+	\bibitem{websrc11}
+	Glitzer Popping explanation in TASVideos run.\\
+	\url{https://tasvideos.org/6616S#GlitzerPopping}\\
+	Last accessed: April 2025.
+
+
+	\bibitem{websrc12}
+	Pokémon Gen III data substructure documentation.\\
+	\url{https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_substructures_(Generation_III)}\\
+	Last accessed: May 2025.
+
+
+	\bibitem{websrc13}
+	List of notable memory breakpoints in Pokémon.\\
+	\url{https://projectpokemon.org/home/docs/other/notable-breakpoints-r31/}\\
+	Last accessed: May 2025.
+
+
+	\bibitem{websrc14}
+	GBAtek documentation on memory map.\\
+	\url{https://problemkaputt.de/gbatek.htm#gbamemorymap}\\
+	Last accessed: May 2025.
+
+
+	\bibitem{websrc15}
+	The Basics of Information Security – introductory concepts.\\
+	\url{https://www.sciencedirect.com/science/article/abs/pii/B9781597496537000104}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc16}
+	Guide to patching CVE-2021-40444 RCE vulnerability.\\
+	\url{https://thesecmaster.com/blog/how-to-fix-the-cve-2021-40444}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc17}
+	Introduction to ARM assembly language.\\
+	\url{https://azeria-labs.com/writing-arm-assembly-part-1/}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc18}
+	Explanation of Backpropagation Through Time (BPTT) in RNNs.\\
+	\url{https://d2l.ai/chapter_recurrent-neural-networks/bptt.html}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc19}
+	Intro to RNNs and LSTMs.\\
+	\url{https://pub.towardsai.net/introduction-to-deep-learning-part-2-rnns-and-ltsm-fc65c230713d}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc20}
+	In-depth guide to understanding LSTMs.\\
+	\url{https://colah.github.io/posts/2015-08-Understanding-LSTMs/}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc21}
+	ARM documentation on Jump-Oriented Programming (JOP).\\
+	\url{https://developer.arm.com/documentation/102433/0200/Jump-oriented-programming}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc22}
+	Academic paper on Call-Oriented Programming (COP).\\
+	\url{https://dl.acm.org/doi/10.1145/1966913.1966919}\\
+	Last accessed: June 2025.
+
+
+	\bibitem{websrc23}
+	Overview of JOP and COP techniques.\\
+	\url{https://www.willsroot.io/2019/09/jump-oriented-programming-and-call.html}\\
+	Last accessed: June 2025.
+
+	\bibitem{gba-specs}
+	GBAtek Documentation.
+	Unofficial GBATEK - GBA/NDS Technical Info.
+	\url{http://problemkaputt.de/gbatek.htm}
+	Last accessed: June 2025.
+
+
+\end{thebibliography}
+
+\newpage
 \section{Attachments}
+\FloatBarrier
 
-\begin{table}[h]
+\begin{figure}[htbp]
+	\centering
+	\includegraphics{figures/pomeg_glitch.png}
+	\caption{A snippet showcasing how the Pomeg glitch happens and how to fix it}
+	\label{fig:pomeg_glitch_code}
+\end{figure}
+
+Here we can see how the entirety of the Pomeg glitch, and consequently, the Glitzer Popping, all stem from a simple if statement missing. If only it were present none of the glitches aforementioned would be possible.
+
+\begin{table}[htbp]
 	\begin{tabular}{|l|l|l|p{6cm}|}
 		\hline
 		\textbf{Instruction}                & \textbf{Opcode (Hex)} & \textbf{Character Used} & \textbf{Description}               \\
@@ -546,15 +753,5 @@ To everyone I've mentioned, thank you for keeping me whole. Don't you dare go ho
 	\caption{Explanation of the commands seen in the previous table}
 	\label{tab:boxes_names_explanation}
 \end{table}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics{figures/pomeg_glitch.png}
-	\caption{A snippet showcasing how the Pomeg glitch happens and how to fix it}
-	\label{fig:pomeg_glitch_code}
-\end{figure}
-
-Here we can see how the entirety of the Pomeg glitch, and consequently, the Glitzer Popping, all stem from a simple if statement missing. If only it were present none of the glitches aforementioned would be possible.
-
 
 \end{document}
