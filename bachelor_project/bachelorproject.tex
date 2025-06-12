@@ -91,10 +91,10 @@ In Pokémon Emerald, the player can use a glitch called \textit{Pomeg glitch} to
 
 The HP statistic is calculated through the following formula:
 
-\begin{equation}
+\begin{equation*}
 	\text{HP} = \left( \frac{(2 \times \text{Base} + \text{IV} + \left( \frac{\text{EV}}{4} \right)) \times \text{Level}}{100} \right) + \text{Level} + 10
 	\label{eq:pokemon_hp_formula}
-\end{equation}
+\end{equation*}
 
 This formula yields the maximum HP of a Pokémon, which is the maximum amount of health it can have. In the case of the \textit{Pomeg glitch}, the only relevant variable is the Effort Value (EV): this is because the EV is the only statistic that can be directly modified based on the actions of the player. It is an integer between 0 and 255, and it increases every time a Pokémon defeats another, but most importantly it can also be decreased by using certain items. In the case of the \textit{Pomeg glitch}, the player can use a specific item called \textit{Pomeg berry} (hence the name) to lower the EV of a Pokémon by 10. However, if, for example, the Pokémon's current HP is at 1, when updating the newly calculated HP statistic, both the current HP and max HP get lowered and as such, the game could set the current HP value to 0, or, even worse, something below it, like underflowing to $ 2^{16}-1$ or 65535 HP (due to the HP statistic being an unsigned two-bytes integer). Now, to use a \textit{Pomeg berry} the player needs to not be in the combat state, and this can create some issues because the game is only capable of handling game overs (which happens when all of the player's Pokémon reach 0 HP) if the player is in a combat state. The problem arises in the situation where the Pokémon whose HP is being updated is the only one with $HP > 1$, because the player may end up with a party of only dead Pokémon, as can be seen in the figure below.
 
@@ -209,10 +209,10 @@ The order of these information remains the same for every Pokémon except for th
 
 This substructure is the most relevant for a Pokémon as it contains the most important information about the Pokémon itself, on top of being key to verify a Pokémon's data integrity. How that part is handled is that the order of these four substructures is determined by the Pokémon's Personality Value (PID, which is an 8-bytes long integer that gets generated when a Pokémon's data is first created) and the TID. The formula used to determine the order of the substructures is as follows:
 
-\begin{equation}
+\begin{equation*}
 	\left( \texttt{TID} \oplus \texttt{PID} \right) \bmod 24
 	\label{eq:substructure_order_formula}
-\end{equation}
+\end{equation*}
 
 The game takes the TID and the PID, lengthens the TID to the length of the PID by adding 0s to it and XORs it with the PID, and then takes the result modulo 24. The result of this calculation is then mapped directly to the substructure order table (table \ref{tab:substructure-order}) to determine the order of the substructures, where G stands for the growth substructure, A stands for the attacks one, E is the EVs and condition one and M is the miscellaneous substructure.
 
@@ -296,7 +296,8 @@ Through the aforementioned glitches, it's possible to create a corrupted Pokémo
 	\label{fig:corruption_substructures}
 \end{figure}
 
-Therefore, when a Pokémon egg hatches, the animation gets played (as shown in figure \ref{fig:sprite_animation}), and the game will then try to read the Pokémon data from the memory, however the address is not the one of a valid animation since in Pokémon Emerald only IDs of up to 0x0183 are occupied by actual animations.
+
+Therefore, when a Pokémon egg hatches, the animation gets played (as shown in figure \ref{fig:sprite_animation}), and the game will then try to read the Pokémon data from the memory, however the address is not the one of a valid animation. As such, the egg will hatch (as shown in figure \ref{fig:deca_hatch}) but instead of seeing an animation the screen will freeze for a couple of frames (as no actual animation exists).
 
 \begin{figure}[!htb]
 	\centering
@@ -313,6 +314,12 @@ Therefore, when a Pokémon egg hatches, the animation gets played (as shown in f
 	\label{fig:Final frame of the hatching animation}
 	\caption{Sprite animations}
 	\label{fig:sprite_animation}
+\end{figure}
+\begin{figure}[h!]
+	\center{\includegraphics[width=0.25\textwidth]
+		{figures/deca_hatch.png}}
+	\caption{Bad egg sprite "animation"}
+	\label{fig:deca_hatch}
 \end{figure}
 
 
@@ -477,29 +484,11 @@ Ultimately, this thesis demonstrates that understanding real-world exploits, eve
 %%%%% BIBLIOGRAPHY %%%%%
 \bibliographystyle{abbrv}
 \bibliography{references}
-\begin{itemize}
-	\item \url{https://www.sciencedirect.com/science/article/abs/pii/B9781597496537000104}
-	\item \url{https://thesecmaster.com/blog/how-to-fix-the-cve-2021-40444}
-	\item \url{https://www.okta.com/identity-101/arbitrary-code-execution/}
-	\item \url{https://catonmat.net/ldd-arbitrary-code-execution}
-	\item \url{https://www.wallarm.com/what/arbitrary-code-execution-vulnerabilities}
-	\item \url{https://comsec.ethz.ch/research/microarch/retbleed/}
-	\item \url{https://azeria-labs.com/writing-arm-assembly-part-1/}
-	\item \url{https://arxiv.org/abs/2301.13760}
-	\item \url{https://dl.acm.org/doi/10.1145/1920261.1920269}
-	\item \url{https://glitchcity.wiki/wiki/Pomeg_glitch}
-	\item \url{https://glitchcity.wiki/wiki/Pomeg_data_corruption_glitch}
-	\item \url{https://projectpokemon.org/home/docs/other/notable-breakpoints-r31/}
-	\item \url{https://bulbapedia.bulbagarden.net/wiki/Pomeg_glitch}
-	\item \url{https://glitchcity.wiki/wiki/Arbitrary_code_execution}
-	\item \url{https://problemkaputt.de/gbatek.htm#gbamemorymap}
-	\item \url{https://tasvideos.org/6616S#GlitzerPopping}
-	\item \url{https://bulbapedia.bulbagarden.net/wiki/Pok\%C3\%A9mon_data_substructures_(Generation\_III)}
-\end{itemize}
+
 
 \section{Attachments}
 
-\begin{table}
+\begin{table}[h]
 	\begin{tabular}{|l|l|l|p{6cm}|}
 		\hline
 		\textbf{Instruction}                & \textbf{Opcode (Hex)} & \textbf{Character Used} & \textbf{Description}               \\
@@ -541,5 +530,15 @@ Ultimately, this thesis demonstrates that understanding real-world exploits, eve
 	\caption{Explanation of the commands seen in the previous table}
 	\label{tab:boxes_names_explanation}
 \end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{figures/pomeg_glitch.png}
+	\caption{A snippet showcasing how the Pomeg glitch happens and how to fix it}
+	\label{fig:pomeg_glitch_code}
+\end{figure}
+
+Here we can see how the entirety of the Pomeg glitch, and consequently, the Glitzer Popping, all stem from a simple if statement missing. If only it were present none of the glitches aforementioned would be possible.
+
 
 \end{document}
