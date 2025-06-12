@@ -252,7 +252,7 @@
 \newcommand{\SIGNATURES}{
 	\begin{tabular}{ll}
 	\hspace{-0.82cm}
-	\textsf{Approved by the advisor on Date: }{}
+	\textsf{Approved by the advisor on Date: }{12.06.2025}
 	\DTLforeach*[\DTLiseq{\type}{r}]{committee}%
 	{\actitle=title,\first=first,\last=last,\type=type}{%
 	\DTLiffirstrow{}{, }\textsf{\print@blank{\actitle}}%

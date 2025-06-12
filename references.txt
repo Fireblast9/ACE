@@ -68,6 +68,4 @@ https://www.willsroot.io/2019/09/jump-oriented-programming-and-call.html
 
 TO-DO:
 
-Add eval, system and shell_exec php doc
 Add attention mechanisms and post-hox explainability tools
-DEP
