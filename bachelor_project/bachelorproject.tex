@@ -123,7 +123,7 @@ The \textit{Pomeg data corruption glitch}, most commonly known as the \textit{Gl
 
 \subsubsection{The setup}
 \label{sec:setup}
-First things first, this thesis is not a tutorial on how to achieve these glitches, as there are countless fantastic other guides about replicating them (like this video made by Youtuber PapaJefé\footnote{https://www.youtube.com/watch?v=45kwOEhKbUg}, or this guide made by Mickaël Laurent\footnote{https://e-sh4rk.github.io/ACE3/}), rather, the purpose is to illustrate and figure out why and how does ACE happen, using Pokémon Emerald as a basis for it.
+First things first, this thesis is not a tutorial on how to achieve these glitches, as there are countless fantastic other guides about replicating them (like this video made by Youtuber Papa Jefé\footnote{https://www.youtube.com/watch?v=45kwOEhKbUg}, or this guide made by Mickaël Laurent\footnote{https://e-sh4rk.github.io/ACE3/}), rather, the purpose is to illustrate and figure out why and how does ACE happen, using Pokémon Emerald as a basis for it.
 
 To actually start executing some arbitrary code we need two things: the first one is the previously illustrated \textit{Pomeg glitch}, where the player is able to setup an impossible game state, and the second one needs the boxes in which the Pokémon that don't fit in the player's team are stored. These are 14 different boxes in which the Pokémon are stored, and they can be renamed by the player. The names of these boxes are stored in a specific area of the memory, and this is where \textit{Glitzer Popping} comes into play: as previously stated it is a technique that allows the player to execute some arbitrary code by renaming the boxes to a specific string, which will then be interpreted as some code that will be executed when the game tries to read the name of the box (an example can be seen in table \ref{tab:boxes_names}; \textbf{note}: in the game, the three dots are represented by a single character "\dots").
 
@@ -494,6 +494,8 @@ To Brites, thank you for inspiring me every day to become a better version of my
 To Stefano, I hope you know how thankful I am for you, for all of your insights, both academic and personal. But before this thesis, before this Bachelor, before every sleepless night, before everything else, the person I am today would not exist if it were not for you. You have been my guiding light through every dark moment and as such I want to dedicate this project to you, to our friendship, to following our dreams and pursuing our passions with the same happiness we had 15 years ago, without ever forgetting who we were yesterday, but always looking out to tomorrow.
 
 A thank you to Esma, Zeno, Tiz and all of my friends and family that have supported me through this endeavor and have filled my days with hope and laughter.
+
+My heartfelt gratitude to im a blisy .\_.\footnote{\url{https://www.youtube.com/@imablisy}}, Papa Jefé\footnote{\url{https://www.youtube.com/@PapaJefeYT}}, and all of the ACE community for the inspiration to pursue this topic.
 
 To everyone I've mentioned, thank you for keeping me whole. Don't you dare go hollow.
 
